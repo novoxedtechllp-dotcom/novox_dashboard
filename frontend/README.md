@@ -96,3 +96,20 @@ To run ESLint and check for potential issues:
 ```bash
 npm run lint
 ```
+
+## Frontend Development Guidelines
+
+### The Four States Rule
+Every screen has four states and all four must be designed before the backend touches it. If you only design the happy path, you will always have broken-looking screens in production.
+
+1. **Loading State**: Skeleton cards or a spinner. Never a blank white screen. The user must know something is happening while data fetches.
+2. **Success State with Data**: The main happy path. Student list loads, attendance marks show, fee records display. This is what you build with mock data first.
+3. **Empty State**: No students enrolled yet. No fee payments recorded. No assignments created. Design a helpful empty state — not a blank table with no rows. Show a message and an action button.
+4. **Error State**: API failed. Network down. Unauthorized. Design these screens too. A red error message with a retry button. Never let a broken API show a white crash screen to users.
+
+### Adding New Features
+Every time a frontend developer adds a new feature, they must:
+- Notify and update this README with relevant details.
+- Ensure the new feature uses a feature-based architecture.
+- Ensure the screen and its components are fully responsive across all device sizes.
+

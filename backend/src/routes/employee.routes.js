@@ -12,7 +12,9 @@ import {
   getEmployeeReport,
   getEmployeeDailyPlan,
   getAvailableTeachingTopics,
-  scheduleTeachingTopic
+  scheduleTeachingTopic,
+  createMentoringSession,
+  getEmployeeMentoringSessions
 } from "../controllers/employee.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -30,6 +32,8 @@ router.route("/:employeeId").get(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE
 router.route("/:employeeId/daily-plan").get(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE] }), getEmployeeDailyPlan);
 router.route("/:employeeId/available-topics").get(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE] }), getAvailableTeachingTopics);
 router.route("/:employeeId/topics/:submoduleId/schedule").patch(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE] }), scheduleTeachingTopic);
+router.route("/:employeeId/mentoring-sessions").get(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE] }), getEmployeeMentoringSessions);
+router.route("/:employeeId/mentoring-sessions").post(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE] }), createMentoringSession);
 
 // Only Admin / HR can create, update, delete
 const writeAuth = authorize({ roles: [ROLES.ADMIN], employeeRoles: [EMPLOYEE_ROLES.HR] });

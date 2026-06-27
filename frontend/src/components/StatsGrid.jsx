@@ -17,9 +17,9 @@ const StatsGrid = () => {
       try {
         const userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
         if (!userInfo || !userInfo.token) return;
-        
+
         const headers = { 'Authorization': `Bearer ${userInfo.token}` };
-        
+
         // Fetch all independently
         const [studRes, empRes, courseRes] = await Promise.all([
           fetch('/api/v1/students?limit=1', { headers }),
@@ -110,18 +110,7 @@ const StatsGrid = () => {
       </div>
 
       {/* Total Job Applications */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm h-[250px]">
-        <div className="flex justify-between items-start mb-4">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-[#003F87]">
-            <TrendingUp size={20} />
-          </div>
-          <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-md">Pending API</span>
-        </div>
-        <div>
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1">Total Job Applications</p>
-          <h3 className="text-3xl font-bold text-slate-800">{stats.jobApplications}</h3>
-        </div>
-      </div>
+
     </div>
   );
 };

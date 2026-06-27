@@ -106,8 +106,8 @@ function InsightsHeader({ isMobile, isTablet, performance, leads = [] }) {
     }
 
     if (diffDays <= 30) {
-      if (l.stage === 'ENROLLED') enrolled++;
-      if (l.stage === 'LOST') lost++;
+      if (l.stage === 'ADMISSION') enrolled++;
+      if (l.stage === 'NOT CONNECTED') lost++;
     }
 
     if (l.course) {
@@ -143,7 +143,7 @@ function InsightsHeader({ isMobile, isTablet, performance, leads = [] }) {
                 <div style={{ width: `${enrolledPct}%`, height: '100%', background: '#003F87', borderRadius: 4 }} />
               </div>
               <span className="text-[18px] font-extrabold text-[#003F87] min-w-[28px]">{enrolled}</span>
-              <span className="text-xs text-slate-500">Enrolled</span>
+              <span className="text-xs text-slate-500">Admission</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#E53935', flexShrink: 0 }} />
@@ -151,7 +151,7 @@ function InsightsHeader({ isMobile, isTablet, performance, leads = [] }) {
                 <div style={{ width: `${lostPct}%`, height: '100%', background: '#E53935', borderRadius: 4 }} />
               </div>
               <span style={{ fontSize: 18, fontWeight: 800, color: '#E53935', minWidth: 28 }}>{lost}</span>
-              <span style={{ fontSize: 13, color: '#555' }}>Lost</span>
+              <span style={{ fontSize: 13, color: '#555' }}>Not Connected</span>
             </div>
           </div>
         </InsightCard>
@@ -445,7 +445,7 @@ function DetailsModal({ lead, initialTab = 'overview', onClose, onUpdateStage, s
                 <div className="flex flex-wrap gap-2">
                   {stages.map((s, i) => {
                     const isActive = s === lead.stage;
-                    const isException = s === 'LOST';
+                    const isException = s === 'NOT CONNECTED';
                     const isDisabled = !isException && i < currentIndex;
                     return (
                       <button
@@ -520,7 +520,7 @@ const SalesCrmContent = () => {
   const [startDate, endDate] = dateRange;
   const datePickerRef = useRef(null);
 
-  const stages = ['NEW', 'CONTACTED', 'FOLLOWUP', 'COUNSELLING', 'ENROLLED', 'LOST'];
+  const stages = ['NEW', 'CONTACTED', 'FOLLOWUP', 'INTERESTED', 'ADMISSION', 'NOT CONNECTED'];
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -809,7 +809,20 @@ const SalesCrmContent = () => {
         <Plus size={22} />
       </button>
 
-      <AddLeadModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} onSave={handleAddLead} sources={sources} stages={stages} teamMembers={employees} coursesList={coursesList} />
+      <AddLeadModal 
+        isOpen={isAddOpen} 
+        onClose={() => setIsAddOpen(false)} 
+        onSave={handleAddLead} 
+        sources={sources} 
+        stages={stages} 
+        teamMembers={employees.filter(e => {
+          const roleName = (e.employee_roles?.role_name || e.department || '').toUpperCase();
+          const sysRole = (e.users?.role || '').toUpperCase();
+          const allowedRoles = ['ADMIN', 'SUPER-ADMIN', 'SALES', 'ACCOUNTANT', 'ACCOUNTS', 'HR'];
+          return allowedRoles.includes(roleName) || allowedRoles.includes(sysRole);
+        })} 
+        coursesList={coursesList} 
+      />
       <DetailsModal
         lead={activeLead}
         initialTab={activeTab}

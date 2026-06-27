@@ -81,6 +81,12 @@ export default function Login({ onLogin }) {
           return;
         }
 
+        if (role === "Student" && userInfoToSave.role !== "STUDENT") {
+    setError("Invalid Student credentials.");
+    setLoading(false);
+    return;
+}
+
         sessionStorage.setItem("userInfo", JSON.stringify(userInfoToSave));
         if (onLogin) onLogin(userInfoToSave.role);
       } else {
@@ -103,8 +109,24 @@ export default function Login({ onLogin }) {
           token: "mock-jwt-token",
         };
         sessionStorage.setItem("userInfo", JSON.stringify(mockAdminUser));
-        if (onLogin) onLogin("ADMIN");
-        return;
+        if (onLogin) onLogin(userInfoToSave.role);
+
+switch (userInfoToSave.role) {
+  case "ADMIN":
+    navigate("/dashboard");
+    break;
+
+  case "EMPLOYEE":
+    navigate("/employee/dashboard");
+    break;
+
+  case "STUDENT":
+    navigate("/student/dashboard");
+    break;
+
+  default:
+    navigate("/");
+}
       }
       setError(
         err.message ||

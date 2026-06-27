@@ -9,7 +9,7 @@ import {
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'daily-plan', label: 'Action Plan', icon: BookOpen },
+  { id: 'daily-plan', label: 'Mentoring Sessions', icon: BookOpen },
   { id: 'my-students', label: 'My Students', icon: GraduationCap },
   { id: 'students', label: 'Students', icon: Users },
   { id: 'employees', label: 'Employees', icon: Briefcase },
@@ -31,7 +31,7 @@ const navItems = [
   // { id: 'journey', label: 'Academic Journey', icon: GraduationCap },
   { id: 'blog-agent', label: 'Blog Agent', icon: Bot },
   { id: 'profile', label: 'My Profile', icon: User },
-  { id: 'admins', label: 'System Admins', icon: Shield },
+
   // { id: 'seo', label: 'SEO Agent', icon: Globe },
 ];
 
@@ -86,12 +86,16 @@ const Sidebar = ({ userRole, permissions = {}, isHR, isDesign, isDevelopment, is
     if (!isHR) hiddenItems.push('recruitment');
     if (!(isSales || isMarketing)) hiddenItems.push('whatsapp-automation');
     if (!isMarketing) hiddenItems.push('seo');
-    if (userRole !== 'ADMIN') hiddenItems.push('admins');
+    if (!(isDevelopment || isDesign)) hiddenItems.push('daily-plan');
+
     
     visibleNavItems = navItems.filter(item => !hiddenItems.includes(item.id))
       .map(item => {
         if (item.id === 'leave') {
           return { ...item, label: userRole === 'STUDENT' ? 'Leave Requests' : 'Leave Management' };
+        }
+        if (item.id === 'daily-plan') {
+          return { ...item, label: 'Mentoring Sessions' };
         }
         if (item.id === 'profile') {
           return { ...item, label: 'Profile' };
@@ -105,7 +109,7 @@ const Sidebar = ({ userRole, permissions = {}, isHR, isDesign, isDevelopment, is
           return { ...item, label: 'Leave Management' };
         }
         if (item.id === 'daily-plan') {
-          return { ...item, label: 'Class Feedback' };
+          return { ...item, label: 'Mentoring Sessions' };
         }
         if (item.id === 'my-students') {
           return { ...item, label: "Students' Progress" };

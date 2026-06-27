@@ -19,7 +19,9 @@ import {
   submitStudentTask,
   reviewStudentTask,
   getStudentSubmoduleProgress,
-  toggleStudentSubmoduleProgress
+  toggleStudentSubmoduleProgress,
+  getStudentMentoringSessions,
+  reviewMentoringSession
 } from "../controllers/student.controller.js";
 
 import { getAcademicJourney } from "../controllers/journey.controller.js";
@@ -79,6 +81,12 @@ router.route("/:studentId/tasks/:taskId/review")
 // Academic journey (all roles, internal RBAC inside the controller)
 router.route("/:studentId/academic-journey")
   .get(authorize({ roles: [ROLES.ADMIN, ROLES.EMPLOYEE, ROLES.STUDENT] }), getAcademicJourney);
+
+// Mentoring sessions
+router.route("/:studentId/mentoring-sessions")
+  .get(readAuth, getStudentMentoringSessions);
+router.route("/:studentId/mentoring-sessions/:sessionId/review")
+  .patch(authorize({ roles: [ROLES.STUDENT] }), reviewMentoringSession);
 
 router.route("/:studentId/documents")
   .get(readAuth, getStudentDocuments)

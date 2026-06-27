@@ -8,7 +8,7 @@ import LeaveManagementContent from './features/admin/components/LeaveManagementC
 import StudentsContent from './features/student/components/StudentsContent';
 import MyStudentsJourney from './features/employee/components/MyStudentsJourney';
 import EmployeesContent from './features/admin/components/EmployeesContent';
-import AdminsContent from './features/admin/components/AdminsContent';
+
 import StudentDashboard from './features/student/components/StudentDashboard';
 import StudentAttendance from './features/student/components/StudentAttendance';
 import StudentLeave from './features/student/components/StudentLeave';
@@ -211,7 +211,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    setLogoutPath(userRole === 'STUDENT' ? '/student-login' : '/login');
+    setLogoutPath('/login');
     setIsAuthenticated(false);
     setUserRole(null);
     setUserInfo(null);
@@ -315,7 +315,7 @@ function App() {
                 <Route path={`${basePath}/my-students`} element={userRole === 'EMPLOYEE' || userRole === 'ADMIN' ? <MyStudentsJourney /> : <Navigate to={`${basePath}/dashboard`} />} />
                 {canViewStudents && <Route path={`${basePath}/students`} element={userRole === 'STUDENT' ? <Navigate to={`${basePath}/dashboard`} /> : <StudentsContent courses={courses} searchQuery={searchQuery} />} />}
                 {canViewEmployees && <Route path={`${basePath}/employees`} element={<EmployeesContent employees={employees} setEmployees={setEmployees} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />}
-                {userRole === 'ADMIN' && <Route path={`${basePath}/admins`} element={<AdminsContent />} />}
+
                 {canViewCourses && <Route path={`${basePath}/courses`} element={<CoursesContent courses={courses} setCourses={setCourses} employees={employees} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />}
 
                 {canViewPayroll && <Route path={`${basePath}/payroll`} element={<PayrollContent />} />}

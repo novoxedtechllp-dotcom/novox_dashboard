@@ -132,9 +132,10 @@ export const createEmployee = asyncHandler(async (req, res) => {
     loginPassword = password || `${employeeCode}@123`;
     const hashedPassword = await bcrypt.hash(loginPassword, 10);
 
+    const systemRole = req.body.system_role || "EMPLOYEE";
     const { data: user, error: userError } = await supabase
       .from("users")
-      .insert([{ email: loginEmail, password_hash: hashedPassword, role: "EMPLOYEE", status: "ACTIVE" }])
+      .insert([{ email: loginEmail, password_hash: hashedPassword, role: systemRole, status: "ACTIVE" }])
       .select("id")
       .single();
 
@@ -266,7 +267,7 @@ export const updateEmployee = asyncHandler(async (req, res) => {
   const { employeeId } = req.params;
   console.log(`\n[PUT /api/v1/employees/${employeeId}] -> updateEmployee called`);
   console.log(`Update Body:`, JSON.stringify(req.body, null, 2));
-  
+
   const { first_name, last_name, phone, designation, status, joining_date, role_id, employee_role, department, salary, avatar_url, email, course_ids, custom_permissions } = req.body;
 
   if (email !== undefined) {
@@ -274,7 +275,7 @@ export const updateEmployee = asyncHandler(async (req, res) => {
     if (currentEmployee?.user_id) {
       // Get current email
       const { data: userData } = await supabase.from("users").select("email").eq("id", currentEmployee.user_id).single();
-      
+
       if (userData?.email !== email) {
         // Reset password to default when email is changed
         const { data: profileData } = await supabase.from("employee_profiles").select("employee_code").eq("id", employeeId).single();
@@ -282,13 +283,13 @@ export const updateEmployee = asyncHandler(async (req, res) => {
         const loginPassword = `${employeeCode}@123`;
         const hashedPassword = await bcrypt.hash(loginPassword, 10);
 
-        const { error: userError } = await supabase.from("users").update({ 
-          email, 
-          password_hash: hashedPassword 
+        const { error: userError } = await supabase.from("users").update({
+          email,
+          password_hash: hashedPassword
         }).eq("id", currentEmployee.user_id).select();
-        
+
         if (userError) throw new ApiError(500, userError.message || "Failed to update email and password in users table");
-        
+
         // Send email and password update notification
         sendEmail({
           to: email,
@@ -427,7 +428,7 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
     await supabase.from("employee_documents").delete().eq("employee_id", employeeId);
     await supabase.from("employee_profiles").delete().eq("id", employeeId);
     if (employee.user_id) {
-       await supabase.from("users").delete().eq("id", employee.user_id);
+      await supabase.from("users").delete().eq("id", employee.user_id);
     }
     return res.status(200).json(new ApiResponse(200, {}, "Employee deleted permanently"));
   }
@@ -474,18 +475,69 @@ export const addEmployeeDocument = asyncHandler(async (req, res) => {
 // @route   DELETE /api/v1/employees/:id/documents/:docId
 export const deleteEmployeeDocument = asyncHandler(async (req, res) => {
   const { employeeId, docId } = req.params;
-
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("employee_documents")
     .delete()
     .eq("id", docId)
-    .eq("employee_id", employeeId)
-    .select();
+    .eq("employee_id", employeeId);
 
   if (error) throw new ApiError(500, error.message || "Failed to delete document");
-  if (!data || data.length === 0) throw new ApiError(404, "Document not found");
 
-  return res.status(200).json(new ApiResponse(200, {}, "Document deleted successfully"));
+  return res.status(200).json(new ApiResponse(200, null, "Document deleted successfully"));
+});
+
+// @desc    Log a mentoring session
+// @route   POST /api/v1/employees/:employeeId/mentoring-sessions
+export const createMentoringSession = asyncHandler(async (req, res) => {
+  const { employeeId } = req.params;
+  const { student_id, submodule_id, session_date, time_taken_minutes, note } = req.body;
+
+  if (!student_id || !submodule_id || !session_date || !time_taken_minutes || !note) {
+    throw new ApiError(400, "Please provide student_id, submodule_id, session_date, time_taken_minutes, and note");
+  }
+
+  const { data, error } = await supabase
+    .from("mentoring_sessions")
+    .insert([{
+      employee_id: employeeId,
+      student_id,
+      submodule_id,
+      session_date,
+      time_taken_minutes,
+      note
+    }])
+    .select()
+    .single();
+
+  if (error) throw new ApiError(500, error.message || "Failed to log session");
+
+  return res.status(201).json(new ApiResponse(201, data, "Session logged successfully"));
+});
+
+// @desc    Get mentoring sessions for an employee
+// @route   GET /api/v1/employees/:employeeId/mentoring-sessions
+export const getEmployeeMentoringSessions = asyncHandler(async (req, res) => {
+  const { employeeId } = req.params;
+  const { date } = req.query;
+
+  let query = supabase
+    .from("mentoring_sessions")
+    .select(`
+      *,
+      students(first_name, last_name, email),
+      course_submodules(title, course_modules(title, courses(name)))
+    `)
+    .eq("employee_id", employeeId);
+
+  if (date) {
+    query = query.eq("session_date", date);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
+
+  if (error) throw new ApiError(500, error.message || "Failed to fetch sessions");
+
+  return res.status(200).json(new ApiResponse(200, data, "Sessions fetched successfully"));
 });
 
 // ==========================================

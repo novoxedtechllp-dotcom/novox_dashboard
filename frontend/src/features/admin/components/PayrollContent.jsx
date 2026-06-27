@@ -189,7 +189,7 @@ const PayrollContent = () => {
   };
 
   const handleUpdateSalary = async () => {
-    if (!editingSalaryEmp || !newSalaryVal) return;
+    if (!editingSalaryEmp || newSalaryVal === '') return;
     try {
       const userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
       const response = await fetch(`/api/v1/employees/${editingSalaryEmp.id}`, {
@@ -844,7 +844,7 @@ const PayrollContent = () => {
                 </button>
                 <button 
                   onClick={handleUpdateSalary}
-                  disabled={!newSalaryVal}
+                  disabled={newSalaryVal === ''}
                   className="px-5 py-2 bg-[#003F87] hover:bg-[#002F66] text-white rounded-xl text-[12px] font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Save Changes

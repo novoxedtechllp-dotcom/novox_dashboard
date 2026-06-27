@@ -209,8 +209,8 @@ const getStudents = asyncHandler(async (req, res) => {
   } else if (instructorId) {
     query = supabase.from("students").select(`
       ${studentSelectFields},
-      student_courses!inner(courses!inner(instructor_id))
-    `, { count: "exact" }).eq("student_courses.courses.instructor_id", instructorId);
+      student_courses!inner(courses!inner(course_instructors!inner(employee_id)))
+    `, { count: "exact" }).eq("student_courses.courses.course_instructors.employee_id", instructorId);
   } else if (department && department !== 'All Departments') {
     query = supabase.from("students").select(`
       ${studentSelectFields},
@@ -972,4 +972,63 @@ export const toggleStudentSubmoduleProgress = asyncHandler(async (req, res) => {
   }
 
   return res.status(200).json(new ApiResponse(200, resultData, "Submodule progress updated"));
+});
+
+// @desc    Get mentoring sessions for a student
+// @route   GET /api/v1/students/:studentId/mentoring-sessions
+export const getStudentMentoringSessions = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+  const { date } = req.query;
+
+  const { data: stu } = await supabase.from("students").select("id").or(`id.eq.${studentId},user_id.eq.${studentId}`).single();
+  const actualStudentId = stu ? stu.id : studentId;
+
+  let query = supabase
+    .from("mentoring_sessions")
+    .select(`
+      *,
+      employee_profiles(first_name, last_name, avatar_url),
+      course_submodules(title, course_modules(title, courses(name)))
+    `)
+    .eq("student_id", actualStudentId);
+
+  if (date) {
+    query = query.eq("session_date", date);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
+
+  if (error) throw new ApiError(500, error.message || "Failed to fetch sessions");
+
+  return res.status(200).json(new ApiResponse(200, data, "Sessions fetched successfully"));
+});
+
+// @desc    Student submits a review/rating for a mentoring session
+// @route   PATCH /api/v1/students/:studentId/mentoring-sessions/:sessionId/review
+export const reviewMentoringSession = asyncHandler(async (req, res) => {
+  const { studentId, sessionId } = req.params;
+  const { student_review, student_rating } = req.body;
+
+  const { data: stu } = await supabase.from("students").select("id").or(`id.eq.${studentId},user_id.eq.${studentId}`).single();
+  const actualStudentId = stu ? stu.id : studentId;
+
+  if (student_rating !== undefined && (student_rating < 1 || student_rating > 5)) {
+    throw new ApiError(400, "Rating must be between 1 and 5");
+  }
+
+  const updates = {};
+  if (student_review !== undefined) updates.student_review = student_review;
+  if (student_rating !== undefined) updates.student_rating = student_rating;
+
+  const { data, error } = await supabase
+    .from("mentoring_sessions")
+    .update(updates)
+    .eq("id", sessionId)
+    .eq("student_id", actualStudentId)
+    .select()
+    .single();
+
+  if (error) throw new ApiError(500, error.message || "Failed to submit review");
+
+  return res.status(200).json(new ApiResponse(200, data, "Review submitted successfully"));
 });

@@ -98,6 +98,7 @@ const SettingsContent = ({ employees = [] }) => {
   // Roles & Permissions state
   const [roles, setRoles] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState('');
+  const [adminUsers, setAdminUsers] = useState([]);
   const [permissions, setPermissions] = useState({});
   
   // Custom Individual Permissions state
@@ -123,6 +124,17 @@ const SettingsContent = ({ employees = [] }) => {
   const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDesc, setNewRoleDesc] = useState('');
+
+  // Create Admin state
+  const [isCreateAdminOpen, setIsCreateAdminOpen] = useState(false);
+  const [isAdminSaving, setIsAdminSaving] = useState(false);
+  const [newAdminData, setNewAdminData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -166,8 +178,20 @@ const SettingsContent = ({ employees = [] }) => {
       }
     };
 
+    const fetchAdminUsers = async () => {
+      try {
+        const data = await apiClient('/users');
+        if (data?.success && data.data) {
+          setAdminUsers(data.data.filter(u => u.role === 'ADMIN'));
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin users', err);
+      }
+    };
+
     fetchRoles();
     fetchAttendanceSettings();
+    fetchAdminUsers();
   }, []);
 
   const filteredEmployeesList = useMemo(() => {
@@ -224,6 +248,53 @@ const SettingsContent = ({ employees = [] }) => {
     setToastText(`Role '${newRoleName}' created successfully!`);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleCreateAdminSubmit = async (e) => {
+    e.preventDefault();
+    if (!newAdminData.first_name || !newAdminData.email || !newAdminData.phone) {
+      setToastText('First name, email, and phone are required.');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      return;
+    }
+    
+    setIsAdminSaving(true);
+    try {
+      // Create admin user directly in the users table
+      const response = await apiClient('/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: newAdminData.email,
+          password: newAdminData.password || 'Admin@123', // Provide default if blank
+          role: 'ADMIN',
+          status: 'ACTIVE'
+        })
+      });
+
+      if (response && response.success) {
+        setToastText('Admin user created successfully! Default password is Admin@123 if left blank.');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+        setIsCreateAdminOpen(false);
+        setNewAdminData({ first_name: '', last_name: '', email: '', phone: '', password: '' });
+        
+        // Refresh admin users
+        const data = await apiClient('/users');
+        if (data?.success && data.data) {
+          setAdminUsers(data.data.filter(u => u.role === 'ADMIN'));
+        }
+      } else {
+        throw new Error(response?.message || 'Failed to create admin');
+      }
+    } catch (err) {
+      console.error('Create admin error:', err);
+      setToastText(err.message || 'Failed to create admin.');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsAdminSaving(false);
+    }
   };
 
   // Role Permissions Handlers
@@ -453,12 +524,21 @@ const SettingsContent = ({ employees = [] }) => {
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setIsCreateRoleOpen(true)}
-            className="bg-[#003F87] hover:bg-[#002B5E] text-white px-4 py-2 rounded-lg text-[13px] font-bold transition-colors shadow-sm flex items-center gap-1.5"
+            onClick={() => setIsCreateAdminOpen(true)}
+            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-[13px] font-bold transition-colors shadow-sm flex items-center gap-1.5"
           >
-            <Plus size={15} />
-            <span>Create New Role</span>
+            <Shield size={15} />
+            <span>Create Admin User</span>
           </button>
+          {settingsTab !== 'admins' && (
+            <button 
+              onClick={() => setIsCreateRoleOpen(true)}
+              className="bg-[#003F87] hover:bg-[#002B5E] text-white px-4 py-2 rounded-lg text-[13px] font-bold transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <Plus size={15} />
+              <span>Create New Role</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -493,6 +573,16 @@ const SettingsContent = ({ employees = [] }) => {
           }`}
         >
           Attendance Settings
+        </button>
+        <button
+          onClick={() => setSettingsTab('admins')}
+          className={`pb-3 px-6 text-sm font-bold border-b-2 transition-all ${
+            settingsTab === 'admins'
+              ? 'border-[#003F87] text-[#003F87]'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Admin Users
         </button>
       </div>
 
@@ -1056,6 +1146,55 @@ const SettingsContent = ({ employees = [] }) => {
         </div>
       )}
 
+      {/* Admin Users Tab Content */}
+      {settingsTab === 'admins' && (
+        <div className="w-full bg-white border border-[#C2C6D4] rounded-xl overflow-hidden shadow-sm p-6">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">Admin Users</h3>
+              <p className="text-sm text-slate-500">Manage system administrators with full access.</p>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="p-4">Admin Email</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4">Last Login</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {adminUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="p-8 text-center text-slate-500 text-sm">No admin users found.</td>
+                  </tr>
+                ) : (
+                  adminUsers.map(admin => (
+                    <tr key={admin.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-4">
+                        <div className="font-bold text-slate-800">{admin.email}</div>
+                        <div className="text-xs text-slate-400">System Administrator</div>
+                      </td>
+                      <td className="p-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${admin.status === 'ACTIVE' ? 'bg-[#E5F7ED] text-[#008A2E]' : 'bg-red-50 text-red-600'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${admin.status === 'ACTIVE' ? 'bg-[#008A2E]' : 'bg-red-500'}`}></span>
+                          {admin.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-slate-600">
+                        {admin.last_login ? new Date(admin.last_login).toLocaleDateString() : 'Never'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Console Info Disclaimer */}
       <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 text-[11px] text-slate-400 px-2 mt-2">
         <div>© 2024 Novox Edtech Admin Console. All rights reserved.</div>
@@ -1131,6 +1270,108 @@ const SettingsContent = ({ employees = [] }) => {
           <p className="text-sm font-semibold">{toastText}</p>
         </div>
       )}
+      {/* Create Admin Modal */}
+      {isCreateAdminOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <Shield size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-lg">Create Admin User</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Add a new system administrator.</p>
+                </div>
+              </div>
+            </div>
+            
+            <form onSubmit={handleCreateAdminSubmit} className="p-6 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">First Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newAdminData.first_name}
+                    onChange={(e) => setNewAdminData({...newAdminData, first_name: e.target.value})}
+                    placeholder="John"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:border-[#003F87] focus:ring-4 focus:ring-[#003F87]/10 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Last Name</label>
+                  <input
+                    type="text"
+                    value={newAdminData.last_name}
+                    onChange={(e) => setNewAdminData({...newAdminData, last_name: e.target.value})}
+                    placeholder="Doe"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:border-[#003F87] focus:ring-4 focus:ring-[#003F87]/10 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  value={newAdminData.email}
+                  onChange={(e) => setNewAdminData({...newAdminData, email: e.target.value})}
+                  placeholder="john.doe@example.com"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:border-[#003F87] focus:ring-4 focus:ring-[#003F87]/10 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Phone Number *</label>
+                <input
+                  type="tel"
+                  required
+                  value={newAdminData.phone}
+                  onChange={(e) => setNewAdminData({...newAdminData, phone: e.target.value})}
+                  placeholder="1234567890"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:border-[#003F87] focus:ring-4 focus:ring-[#003F87]/10 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Password (Optional)</label>
+                <input
+                  type="password"
+                  value={newAdminData.password}
+                  onChange={(e) => setNewAdminData({...newAdminData, password: e.target.value})}
+                  placeholder="Leave blank to auto-generate"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:border-[#003F87] focus:ring-4 focus:ring-[#003F87]/10 transition-all"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateAdminOpen(false)}
+                  className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAdminSaving}
+                  className="px-6 py-2.5 text-sm font-bold text-white bg-[#003F87] hover:bg-[#002B5E] rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isAdminSaving ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <Shield size={16} />
+                  )}
+                  Create Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
