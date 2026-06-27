@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -9,12 +9,137 @@ import {
   ShieldCheck,
   ArrowRight,
   CheckSquare,
-  Loader2,
   Calendar,
   CheckCircle,
 } from "lucide-react";
 import { login } from "../api/authApi";
 import "../styles/Login.css";
+
+// The three login panels this screen supports.
+const ROLES = ["Admin", "Employee", "Student"];
+
+// Branding content for the left-hand panel, keyed by the selected role.
+// Pulling this into one config object (instead of three near-duplicate
+// JSX blocks) makes it easy to add a fourth role later without copy-paste.
+const PANEL_CONTENT = {
+  Admin: {
+    heading: (
+      <>
+        Manage Everything
+        <br />
+        with Novox Edtech
+      </>
+    ),
+    paragraph:
+      "Your all-in-one hub for students, employees, attendance, courses, and more. Streamline your institution's operations with our advanced administrative suite.",
+    features: [
+      {
+        icon: LayoutDashboard,
+        title: "Real-time Analytics",
+        text: "Monitor all operations",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Secure Protocols",
+        text: "Enterprise grade safety",
+      },
+    ],
+  },
+  Employee: {
+    heading: (
+      <>
+        Streamline Your
+        <br />
+        Daily Workflow
+      </>
+    ),
+    paragraph:
+      "Access your schedule, manage attendance, and stay on top of your tasks — all from your personal staff portal at Novox Edtech.",
+    features: [
+      {
+        icon: Calendar,
+        title: "Attendance Tracking",
+        text: "Clock in & view records",
+      },
+      {
+        icon: CheckSquare,
+        title: "Task Management",
+        text: "Stay on top of your duties",
+      },
+    ],
+  },
+  Student: {
+    heading: (
+      <>
+        Empower Your
+        <br />
+        Academic Journey
+      </>
+    ),
+    paragraph:
+      "Welcome to your centralized hub. Manage your schedules, track your progress, and achieve academic excellence seamlessly with Novox Edtech.",
+    features: [
+      {
+        icon: Calendar,
+        title: "Real-time Schedule",
+        text: "Track all your classes",
+      },
+      {
+        icon: CheckCircle,
+        title: "Seamless Tasks",
+        text: "Manage assignments effortlessly",
+      },
+    ],
+  },
+};
+
+// Maps the backend role string to where signed-in users should land.
+// Adjust these to match the actual routes defined in your app's router.
+const ROLE_DASHBOARD_PATH = {
+  ADMIN: "/admin/dashboard",
+  EMPLOYEE: "/employee/dashboard",
+  STUDENT: "/student/dashboard",
+};
+
+// Lets the three panels keep working end-to-end (UI included) even when
+// the backend isn't running locally. Remove this block once a real API
+// is always available, or gate it behind an env flag like
+// import.meta.env.DEV.
+const MOCK_USERS = {
+  Admin: {
+    email: "admin@novox.com",
+    password: "admin@novox",
+    profile: {
+      id: "mock-admin-id",
+      email: "admin@novox.com",
+      role: "ADMIN",
+      first_name: "System",
+      last_name: "Admin",
+    },
+  },
+  Employee: {
+    email: "employee@novox.com",
+    password: "employee@novox",
+    profile: {
+      id: "mock-employee-id",
+      email: "employee@novox.com",
+      role: "EMPLOYEE",
+      first_name: "Staff",
+      last_name: "Member",
+    },
+  },
+  Student: {
+    email: "student@novox.com",
+    password: "student@novox",
+    profile: {
+      id: "mock-student-id",
+      email: "student@novox.com",
+      role: "STUDENT",
+      first_name: "Jane",
+      last_name: "Doe",
+    },
+  },
+};
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -30,6 +155,35 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const panel = PANEL_CONTENT[role];
+
+  // After a successful login, hand the role to the parent (so it can
+  // update app-level auth state) and then route to that role's dashboard.
+  const completeLogin = (userInfo) => {
+    sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
+    if (onLogin) onLogin(userInfo.role);
+    navigate(ROLE_DASHBOARD_PATH[userInfo.role] || "/dashboard");
+  };
+
+  // Checks that the account the backend returned actually belongs on the
+  // panel the person chose. This is what stops, e.g., a student account
+  // from signing in through the Admin or Employee panel.
+  const getPanelMismatchError = (actualRole) => {
+    const expectedRole = role.toUpperCase();
+    if (actualRole === expectedRole) return null;
+
+    if (actualRole === "ADMIN") {
+      return "Please use the Admin panel to sign in with this account.";
+    }
+    if (actualRole === "EMPLOYEE") {
+      return "Access denied. Please use the Employee panel to sign in.";
+    }
+    if (actualRole === "STUDENT") {
+      return "Access denied. Please use the Student panel to sign in.";
+    }
+    return 'Invalid login panel. Please use the ${role} panel.';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -37,13 +191,13 @@ export default function Login({ onLogin }) {
     if (isForgotPassword) {
       if (!otpSent) {
         setOtpSent(true);
-        // Simulate sending OTP
+        // TODO: replace with a real "send OTP" API call for this role.
       } else {
         if (password !== confirmPassword) {
           setError("Passwords do not match!");
           return;
         }
-        // Simulate resetting password
+        // TODO: replace with a real "reset password" API call.
         setIsForgotPassword(false);
         setOtpSent(false);
         setPassword("");
@@ -57,77 +211,34 @@ export default function Login({ onLogin }) {
     try {
       const data = await login(email, password);
 
-      if (data) {
+      if (data?.data?.user) {
         const userInfoToSave = {
           ...data.data.user,
           token: data.data.accessToken,
         };
 
-        // Enforce login panel restriction
-        if (role === "Admin" && userInfoToSave.role !== "ADMIN") {
-          setError("Invalid login panel. You do not have Admin privileges.");
-          setLoading(false);
-          return;
-        }
-        if (role === "Employee" && userInfoToSave.role !== "EMPLOYEE") {
-          if (userInfoToSave.role === "STUDENT") {
-            setError(
-              "Access Denied. Please use the Student Portal at /student-login.",
-            );
-          } else {
-            setError("Invalid login panel. Please use the Employee panel.");
-          }
+        const mismatchError = getPanelMismatchError(userInfoToSave.role);
+        if (mismatchError) {
+          setError(mismatchError);
           setLoading(false);
           return;
         }
 
-        if (role === "Student" && userInfoToSave.role !== "STUDENT") {
-    setError("Invalid Student credentials.");
-    setLoading(false);
-    return;
-}
-
-        sessionStorage.setItem("userInfo", JSON.stringify(userInfoToSave));
-        if (onLogin) onLogin(userInfoToSave.role);
+        completeLogin(userInfoToSave);
       } else {
-        setError(data.message || "Login failed");
+        setError(data?.message || "Login failed");
       }
     } catch (err) {
       console.error("Backend connection failed:", err);
-      // Developer fallback for testing frontend components offline when backend is not running
-      if (
-        email === "admin@novox.com" &&
-        password === "admin@novox" &&
-        role === "Admin"
-      ) {
-        const mockAdminUser = {
-          id: "mock-admin-id",
-          email: "admin@novox.com",
-          role: "ADMIN",
-          first_name: "System",
-          last_name: "Admin",
-          token: "mock-jwt-token",
-        };
-        sessionStorage.setItem("userInfo", JSON.stringify(mockAdminUser));
-        if (onLogin) onLogin(userInfoToSave.role);
 
-switch (userInfoToSave.role) {
-  case "ADMIN":
-    navigate("/dashboard");
-    break;
-
-  case "EMPLOYEE":
-    navigate("/employee/dashboard");
-    break;
-
-  case "STUDENT":
-    navigate("/student/dashboard");
-    break;
-
-  default:
-    navigate("/");
-}
+      // Developer fallback for testing frontend components offline when
+      // the backend isn't running.
+      const mock = MOCK_USERS[role];
+      if (mock && email === mock.email && password === mock.password) {
+        completeLogin({ ...mock.profile, token: "mock-jwt-token" });
+        return;
       }
+
       setError(
         err.message ||
           "Failed to connect to the server. Please ensure the backend is running.",
@@ -138,10 +249,9 @@ switch (userInfoToSave.role) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#FAFBFC] font-sans selection:bg-blue-200">
-      {/* Left Panel - Branding */}
-      {(role === "Employee" || role === "Admin") && (
-        <div className="lg:w-1/2 bg-gradient-to-br from-[#001D4A] via-[#003F87] to-[#0056B3] text-white p-8 md:p-16 flex flex-col justify-center relative overflow-hidden hidden md:flex">
+    <div className="login-page flex flex-col lg:flex-row min-h-screen w-full bg-[#FAFBFC] font-sans selection:bg-blue-200">
+      {/* Left Panel - Branding (content swaps based on the selected role) */}
+      <div className="lg:w-1/2 bg-gradient-to-br from-[#001D4A] via-[#003F87] to-[#0056B3] text-white p-8 md:p-16 flex flex-col justify-center relative overflow-hidden hidden md:flex">
         {/* Abstract Background Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400 opacity-10 blur-3xl"></div>
@@ -160,99 +270,37 @@ switch (userInfoToSave.role) {
           </div>
 
           <h1 className="text-4xl lg:text-5xl font-black leading-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">
-            Manage Everything
-            <br />
-            with Novox Edtech
+            {panel.heading}
           </h1>
           <p className="text-blue-100/80 text-lg leading-relaxed mb-12 font-medium max-w-md">
-            Your all-in-one hub for students, employees, attendance, courses,
-            and more. Streamline your institution's operations with our advanced
-            administrative suite.
+            {panel.paragraph}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/20 transition-all cursor-default">
-              <div className="bg-white/20 p-2 rounded-lg shrink-0">
-                <LayoutDashboard className="text-white" size={20} />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">
-                  Real-time Analytics
-                </h4>
-                <p className="text-xs text-blue-200 mt-1 font-medium">
-                  Monitor all operations
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/20 transition-all cursor-default">
-              <div className="bg-white/20 p-2 rounded-lg shrink-0">
-                <ShieldCheck className="text-white" size={20} />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">
-                  Secure Protocols
-                </h4>
-                <p className="text-xs text-blue-200 mt-1 font-medium">
-                  Enterprise grade safety
-                </p>
-              </div>
-            </div>
+            {panel.features.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/20 transition-all cursor-default"
+                >
+                  <div className="bg-white/20 p-2 rounded-lg shrink-0">
+                    <Icon className="text-white" size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm">
+                      {feature.title}
+                    </h4>
+                    <p className="text-xs text-blue-200 mt-1 font-medium">
+                      {feature.text}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-        )}
-
-        {role === "Student" && (
-          <div className="lg:w-1/2 bg-gradient-to-br from-[#001D4A] via-[#003F87] to-[#0056B3] text-white p-8 md:p-16 flex flex-col justify-center relative overflow-hidden hidden md:flex">
-        {/* Abstract Background Elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400 opacity-10 blur-3xl"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-cyan-400 opacity-10 blur-3xl"></div>
-          <div className="absolute top-[40%] right-[10%] w-[30%] h-[30%] rounded-full bg-white opacity-5 blur-2xl"></div>
-        </div>
-
-        <div className="relative z-10 max-w-lg mx-auto w-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-16 bg-white py-3 px-4 rounded-2xl inline-flex shadow-lg">
-            <img src="/novox-edtech-calicut-logo.png" alt="Novox Edtech" className="h-[40px] object-contain" />
-          </div>
-
-          {/* Heading */}
-          <h1 className="text-4xl lg:text-5xl font-black leading-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">
-            Empower Your <br/> Academic Journey
-          </h1>
-
-          {/* Paragraph */}
-          <p className="text-blue-100 text-lg mb-12 leading-relaxed max-w-md font-medium">
-            Welcome to your centralized hub. Manage your schedules, track your progress, and achieve academic excellence seamlessly with Novox Edtech.
-          </p>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/20 transition-all cursor-default">
-              <div className="bg-white/20 p-2 rounded-lg shrink-0">
-                <Calendar className="text-white" size={20} />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">Real-time Schedule</h4>
-                <p className="text-xs text-blue-200 mt-1 font-medium">Track all your classes</p>
-              </div>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/20 transition-all cursor-default">
-              <div className="bg-white/20 p-2 rounded-lg shrink-0">
-                <CheckCircle className="text-white" size={20} />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">Seamless Tasks</h4>
-                <p className="text-xs text-blue-200 mt-1 font-medium">Manage assignments effortlessly</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-        )}
 
       {/* Right Panel - Form */}
       <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 bg-white lg:rounded-l-3xl relative z-10 lg:-ml-6 shadow-[-20px_0_40px_rgba(0,0,0,0.1)]">
@@ -266,19 +314,24 @@ switch (userInfoToSave.role) {
                 ? otpSent
                   ? "Enter the OTP sent to your email and your new password."
                   : "Enter your email to receive a password reset OTP."
-                : "Enter your credentials to access the management portal."}
+                : 'Sign in to the ${role} portal to continue.'}
             </p>
           </div>
 
+          {/* Single 3-way role toggle: Admin / Employee / Student */}
           {!isForgotPassword && (
-            <div className="bg-slate-100 p-1.5 rounded-2xl flex mb-8">
-              {["Employee", "Student"].map((r) => (
+            <div
+              className="bg-slate-100 p-1.5 rounded-2xl flex mb-8"
+              role="tablist"
+              aria-label="Login panel"
+            >
+              {ROLES.map((r) => (
                 <button
                   key={r}
                   type="button"
-                  onClick={() => {
-                    setRole(r);
-                  }}
+                  role="tab"
+                  aria-selected={role === r}
+                  onClick={() => setRole(r)}
                   className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
                     role === r
                       ? "bg-white text-[#003F87] shadow-sm"
@@ -316,7 +369,7 @@ switch (userInfoToSave.role) {
                 </div>
 
                 {otpSent && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="space-y-5 otp-fade-in animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div>
                       <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
                         OTP Code
@@ -358,6 +411,7 @@ switch (userInfoToSave.role) {
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? (
                             <EyeOff size={18} />
@@ -391,6 +445,9 @@ switch (userInfoToSave.role) {
                             setShowConfirmPassword(!showConfirmPassword)
                           }
                           className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          aria-label={
+                            showConfirmPassword ? "Hide password" : "Show password"
+                          }
                         >
                           {showConfirmPassword ? (
                             <EyeOff size={18} />
@@ -430,15 +487,13 @@ switch (userInfoToSave.role) {
                     <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
                       Password
                     </label>
-                    {role === "Employee" && (
-                      <button
-                        type="button"
-                        onClick={() => setIsForgotPassword(true)}
-                        className="text-[11px] font-bold text-[#003F87] hover:underline"
-                      >
-                        Forgot Password?
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(true)}
+                      className="text-[11px] font-bold text-[#003F87] hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
                   </div>
                   <div className="relative">
                     <Lock
@@ -457,6 +512,7 @@ switch (userInfoToSave.role) {
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -504,23 +560,6 @@ switch (userInfoToSave.role) {
                 </>
               )}
             </button>
-            <div className="bg-slate-100 p-1.5 rounded-2xl flex mb-8">
-              <button
-                  
-                  type="button"
-                  onClick={() => {
-                    setRole("Admin");
-                  }}
-                  className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
-                    role === 'Admin'
-                      ? "bg-white text-[#003F87] shadow-sm"
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
-                  }`}
-                >
-                  Admin
-                </button>
-            </div>
-            
 
             {isForgotPassword && (
               <div className="text-center mt-6">
