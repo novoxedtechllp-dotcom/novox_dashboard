@@ -58,6 +58,16 @@ const StarRating = ({ rating, setRating, readOnly = false }) => {
       ))}
     </div>
   );
+const getDateParts = (value) => {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  return { year, month, day };
+};
+
+const buildDateString = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const DailyPlan = ({ userType, userId }) => {
@@ -119,6 +129,28 @@ const DailyPlan = ({ userType, userId }) => {
     const day = String(d.getDate()).padStart(2, '0');
     setSelectedDate(`${year}-${month}-${day}`);
   };
+
+  const handleMonthChange = (e) => {
+    const month = Number(e.target.value);
+    const { year, day } = getDateParts(selectedDate);
+    const safeDate = new Date(year, month - 1, 1);
+    const maxDay = new Date(year, month, 0).getDate();
+    safeDate.setDate(Math.min(day || 1, maxDay));
+    setSelectedDate(buildDateString(safeDate));
+  };
+
+  const handleYearChange = (e) => {
+    const year = Number(e.target.value);
+    const { month, day } = getDateParts(selectedDate);
+    const safeDate = new Date(year, month - 1, 1);
+    const maxDay = new Date(year, month, 0).getDate();
+    safeDate.setDate(Math.min(day || 1, maxDay));
+    setSelectedDate(buildDateString(safeDate));
+  };
+
+  const selectedDateParts = getDateParts(selectedDate);
+  const monthOptions = Array.from({ length: 12 }, (_, index) => index + 1);
+  const yearOptions = Array.from({ length: 100 }, (_, index) => new Date().getFullYear() - 50 + index);
 
   useEffect(() => {
     if (userType === 'ADMIN') {
@@ -210,34 +242,73 @@ const DailyPlan = ({ userType, userId }) => {
         </div>
 
         {/* Custom Date Navigator */}
-        <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-          <button onClick={handlePrevDay} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-600 hover:text-[#003F87] hover:shadow-sm border border-slate-200 transition-all active:scale-95">
-            <ChevronLeft size={18} />
-          </button>
-          
-          <div className="flex gap-2">
-            {dateRange.map((d, i) => (
-              <button 
-                key={i}
-                onClick={() => setSelectedDate(d.dateString)}
-                className={`
-                  flex flex-col items-center justify-center w-12 h-14 rounded-xl transition-all
-                  ${d.dateString === selectedDate 
-                    ? 'bg-[#003F87] text-white shadow-md scale-105 font-bold border border-blue-600' 
-                    : 'bg-transparent text-slate-600 hover:bg-white hover:shadow-sm font-medium border border-transparent hover:border-slate-200'
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Month</span>
+              <input
+                type="number"
+                min="1"
+                max="12"
+                value={selectedDateParts.month || ''}
+                onChange={(e) => {
+                  const nextMonth = Number(e.target.value);
+                  if (!Number.isNaN(nextMonth)) {
+                    handleMonthChange({ target: { value: String(nextMonth) } });
                   }
-                `}
-              >
-                <span className={`text-[10px] uppercase ${d.dateString === selectedDate ? 'text-blue-200' : 'text-slate-400'}`}>{d.dayName}</span>
-                <span className="text-lg leading-none mt-1">{d.dayNumber}</span>
-                {d.isToday && <span className={`w-1 h-1 rounded-full mt-1 ${d.dateString === selectedDate ? 'bg-white' : 'bg-[#003F87]'}`}></span>}
-              </button>
-            ))}
+                }}
+                className="w-14 bg-transparent text-sm font-bold text-slate-700 outline-none"
+                aria-label="Select month"
+              />
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Year</span>
+              <input
+                type="number"
+                min="1900"
+                max="2100"
+                value={selectedDateParts.year || ''}
+                onChange={(e) => {
+                  const nextYear = Number(e.target.value);
+                  if (!Number.isNaN(nextYear)) {
+                    handleYearChange({ target: { value: String(nextYear) } });
+                  }
+                }}
+                className="w-20 bg-transparent text-sm font-bold text-slate-700 outline-none"
+                aria-label="Select year"
+              />
+            </div>
           </div>
 
-          <button onClick={handleNextDay} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-600 hover:text-[#003F87] hover:shadow-sm border border-slate-200 transition-all active:scale-95">
-            <ChevronRight size={18} />
-          </button>
+          <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+            <button onClick={handlePrevDay} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-600 hover:text-[#003F87] hover:shadow-sm border border-slate-200 transition-all active:scale-95">
+              <ChevronLeft size={18} />
+            </button>
+            
+            <div className="flex gap-2">
+              {dateRange.map((d, i) => (
+                <button 
+                  key={i}
+                  onClick={() => setSelectedDate(d.dateString)}
+                  className={`
+                    flex flex-col items-center justify-center w-12 h-14 rounded-xl transition-all
+                    ${d.dateString === selectedDate 
+                      ? 'bg-[#003F87] text-white shadow-md scale-105 font-bold border border-blue-600' 
+                      : 'bg-transparent text-slate-600 hover:bg-white hover:shadow-sm font-medium border border-transparent hover:border-slate-200'
+                    }
+                  `}
+                >
+                  <span className={`text-[10px] uppercase ${d.dateString === selectedDate ? 'text-blue-200' : 'text-slate-400'}`}>{d.dayName}</span>
+                  <span className="text-lg leading-none mt-1">{d.dayNumber}</span>
+                  {d.isToday && <span className={`w-1 h-1 rounded-full mt-1 ${d.dateString === selectedDate ? 'bg-white' : 'bg-[#003F87]'}`}></span>}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={handleNextDay} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-600 hover:text-[#003F87] hover:shadow-sm border border-slate-200 transition-all active:scale-95">
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
 

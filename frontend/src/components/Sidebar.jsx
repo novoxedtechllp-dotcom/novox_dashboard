@@ -18,10 +18,7 @@ const navItems = [
   { id: 'attendance', label: 'Attendance', icon: Calendar },
   { id: 'leave', label: 'Leave Management', icon: FileText },
   { id: 'fees', label: 'Fees', icon: CreditCard },
-    { id: 'sales-crm', label: 'Sales CRM', icon: Handshake },
-
-
-  { id: 'my-payroll', label: 'My Payroll', icon: Wallet },
+  { id: 'sales-crm', label: 'Sales CRM', icon: Handshake },
   { id: 'payroll', label: 'Payroll Management', icon: Wallet },
   { id: 'work-reports', label: 'Work Reports', icon: CheckSquare },
   // { id: 'whatsapp-automation', label: 'WhatsApp Automation', icon: MessageSquare },
