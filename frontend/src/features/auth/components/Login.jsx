@@ -921,7 +921,7 @@ export default function Login({ onLogin }) {
                 ? otpSent
                   ? "Enter the OTP sent to your email and your new password."
                   : "Enter your email to receive a password reset OTP."
-                : 'Sign in to the ${role} portal to continue.'}
+                : `Sign in to the ${role} portal to continue.`}
             </p>
           </div>
 
