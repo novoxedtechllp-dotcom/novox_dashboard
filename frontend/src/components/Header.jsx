@@ -7,6 +7,7 @@ const Header = ({ onLogout, userInfo, basePath = '/admin', searchQuery = '', set
   const location = useLocation();
   const activeTab = location.pathname.split('/').pop() || 'dashboard';
   const showSearchBar = ['students', 'employees', 'courses', 'sales-crm', 'leave', 'work-reports', 'attendance', 'gallery', 'fees'].includes(activeTab);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -48,6 +49,7 @@ const Header = ({ onLogout, userInfo, basePath = '/admin', searchQuery = '', set
   const [avatarError, setAvatarError] = useState(false);
 
   return (
+    <>
     <header className="h-[72px] min-h-[72px] bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40 shadow-sm">
       {/* Search Bar & Title */}
       <div className="flex items-center gap-3 md:gap-6">
@@ -124,7 +126,7 @@ const Header = ({ onLogout, userInfo, basePath = '/admin', searchQuery = '', set
               <div className="px-2">
                 <div 
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#D80000] hover:bg-red-50 transition-colors cursor-pointer text-[13px] font-bold"
-                  onClick={onLogout}
+                  onClick={() => setShowLogoutModal(true)}
                 >
                   <LogOut size={16} /> Log Out
                 </div>
@@ -171,7 +173,57 @@ const Header = ({ onLogout, userInfo, basePath = '/admin', searchQuery = '', set
           </div>
         </div>
       )}
+      
     </header>
+    {showLogoutModal && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowLogoutModal(false)}
+          />
+    
+          {/* Modal */}
+          <div className="relative bg-white rounded-3xl shadow-2xl w-[92%] max-w-md p-8 animate-scaleIn">
+    
+            <div className="flex justify-center">
+              <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
+                <LogOut className="w-10 h-10 text-red-600" />
+              </div>
+            </div>
+    
+            <h2 className="text-2xl font-bold text-center mt-5">
+              Confirm Logout
+            </h2>
+    
+            <p className="text-center text-slate-500 mt-3">
+              Are you sure you want to logout?
+              <br />
+              You will need to login again.
+            </p>
+    
+            <div className="flex gap-4 mt-8">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 h-12 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+    
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  onLogout();
+                }}
+                className="flex-1 h-12 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
