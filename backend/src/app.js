@@ -1,6 +1,13 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { readFileSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import { load as loadYaml } from "js-yaml";
+import { apiReference } from "@scalar/express-api-reference";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 import authRouter from "./routes/auth.routes.js";
 import studentRouter from "./routes/student.routes.js";
@@ -45,6 +52,31 @@ app.use(
 
 app.use(express.static("public"));
 app.use(cookieParser());
+
+// ─── API Documentation ─────────────────────────────────────────────────────
+// Load the OpenAPI spec once at startup
+const specPath = resolve(__dirname, "../spec.yaml");
+const openApiSpec = loadYaml(readFileSync(specPath, "utf8"));
+
+// Serve raw spec as JSON (for Postman / tooling import)
+app.get("/api/docs/spec.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.json(openApiSpec);
+});
+
+// Serve Scalar interactive API reference UI
+app.use(
+  "/api/docs",
+  apiReference({
+    spec: { content: openApiSpec },
+    theme: "purple",
+    layout: "modern",
+    defaultHttpClient: { targetKey: "javascript", clientKey: "fetch" },
+    metaData: {
+      title: "Novox EdTech Dashboard API Docs",
+    },
+  })
+);
 
 // Health check for keep-alive pings
 app.get("/api/health", (req, res) => {
