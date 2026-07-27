@@ -211,7 +211,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    setLogoutPath(userRole === 'STUDENT' ? '/student-login' : '/login');
+    setLogoutPath('/login');
     setIsAuthenticated(false);
     setUserRole(null);
     setUserInfo(null);
@@ -289,7 +289,6 @@ function App() {
             {!isAuthenticated ? (
               <>
                 <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                <Route path="/student-login" element={<StudentLogin onLogin={handleLogin} />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="*" element={<Navigate to={logoutPath} replace />} />
               </>

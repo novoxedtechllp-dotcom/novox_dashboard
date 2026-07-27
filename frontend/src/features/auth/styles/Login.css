@@ -1,446 +1,63 @@
-.login-wrapper {
-  --primary: #003F87;
-  --secondary: #0056B3;
-  --text-dark: #191C1D;
-  --text-light: #555F6B;
-  --text-lighter: #C2C6D4;
-  --border-color: #C2C6D4;
-  --bg-light: #F8F9FA;
-  --white: #FFFFFF;
-  
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-light);
-  color: var(--text-dark);
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Login.css
+   --------------------------------------------------------------
+   The component now does almost all of its visual styling with
+   Tailwind utility classes directly in the JSX, so this file no
+   longer needs the old hand-rolled layout/typography rules (those
+   targeted class names like .login-layout / .login-left-panel that
+   the current markup doesn't use, which is why the old autofill
+   fix and checkbox styles weren't actually taking effect anymore).
+
+   What's left here is scoped to `.login-page` (added to the root
+   element in Login.jsx) and only covers the handful of things
+   Tailwind utilities can't express on their own:
+     1. A fix for browser autofill recoloring inputs.
+     2. A CSS-only fallback for the OTP/reset-password reveal
+        animation, in case the tailwindcss-animate plugin isn't
+        installed in this project.
+     3. Visible keyboard focus on the icon-only buttons.
+   -------------------------------------------------------------- */
+
+/* Chrome/Edge/Safari autofill turns inputs yellow and dims the text.
+   Force them back to match the rest of the form. */
+.login-page input:-webkit-autofill,
+.login-page input:-webkit-autofill:hover,
+.login-page input:-webkit-autofill:focus,
+.login-page input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #f8fafc inset;
+  -webkit-text-fill-color: #1e293b;
+  caret-color: #1e293b;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
-.login-wrapper * {
-  box-sizing: border-box;
+/* Fallback reveal animation for the OTP / new-password fields.
+   Tailwind's `animate-in fade-in slide-in-from-bottom-2` utilities
+   only work if the tailwindcss-animate plugin is registered; this
+   keyframe set makes the reveal animate either way. */
+.login-page .otp-fade-in {
+  animation: login-fade-in-up 0.3s ease-out;
 }
 
-.login-layout {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-/* Left Panel */
-.login-left-panel {
-  flex: 1;
-  background-color: #003F87;
-  color: var(--white);
-  padding: 0 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-wrapper .left-content {
-  max-width: 500px;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.login-wrapper .logo-section {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.login-wrapper .logo-icon {
-  background-color: var(--white);
-  color: #003F87;
-  border-radius: 8px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-wrapper .logo-icon svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2.2;
-}
-
-.login-wrapper .logo-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.login-wrapper .hero-text {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.login-wrapper .hero-text h1 {
-  font-size: 2.125rem;
-  line-height: 1.2;
-  font-weight: 700;
-}
-
-.login-wrapper .hero-text p {
-  color: var(--text-lighter);
-  line-height: 1.6;
-  font-size: 1rem;
-}
-
-.login-wrapper .features {
-  display: flex;
-  gap: 1.25rem;
-}
-
-.login-wrapper .feature-card {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: transform 0.3s ease;
-}
-
-.login-wrapper .feature-card:hover {
-  transform: translateY(-5px);
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.login-wrapper .feature-icon {
-  color: var(--white);
-}
-
-.login-wrapper .feature-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.login-wrapper .feature-card span {
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-
-/* Right Panel */
-.login-right-panel {
-  flex: 1;
-  background-color: var(--white);
-  display: block;
-  overflow-y: auto;
-  height: 100vh;
-}
-
-.login-wrapper .login-box {
-  width: 100%;
-  max-width: 448px;
-  padding: 2rem;
-  margin: 10vh auto 4vh auto;
-}
-
-.login-wrapper .login-header {
-  margin-bottom: 2rem;
-}
-
-.login-wrapper .login-header h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-}
-
-.login-wrapper .login-header p {
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-.login-wrapper .role-toggle {
-  display: flex;
-  background-color: var(--bg-light);
-  padding: 0.25rem;
-  border-radius: 8px;
-  margin-bottom: 1.75rem;
-}
-
-.login-wrapper .toggle-btn {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  border: none;
-  background: transparent;
-  color: var(--text-light);
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.login-wrapper .toggle-btn.active {
-  background-color: var(--white);
-  color: #003F87;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.login-wrapper .login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.login-wrapper .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.login-wrapper .label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.login-wrapper label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-light);
-}
-
-.login-wrapper .forgot-link {
-  font-size: 0.8125rem;
-  color: #003F87;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.login-wrapper .forgot-link:hover {
-  text-decoration: underline;
-}
-
-.login-wrapper .input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.login-wrapper .input-icon {
-  position: absolute;
-  left: 0.875rem;
-  color: var(--text-lighter);
-}
-
-.login-wrapper .input-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.login-wrapper .input-wrapper input,
-.login-wrapper .input-wrapper select {
-  width: 100%;
-  padding: 0.625rem 1rem 0.625rem 2.25rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  color: var(--text-dark) !important;
-  background-color: var(--white);
-  transition: border-color 0.2s ease;
-  font-weight: 500;
-  opacity: 1 !important;
-}
-
-/* Fix for Chrome autofill rendering text light */
-.login-wrapper .input-wrapper input:-webkit-autofill,
-.login-wrapper .input-wrapper input:-webkit-autofill:hover, 
-.login-wrapper .input-wrapper input:-webkit-autofill:focus, 
-.login-wrapper .input-wrapper input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-    -webkit-text-fill-color: var(--text-dark) !important;
-    transition: background-color 5000s ease-in-out 0s;
-}
-
-.login-wrapper .input-wrapper input:focus,
-.login-wrapper .input-wrapper select:focus {
-  outline: none;
-  border-color: #003F87;
-}
-
-/* Phone Input Wrapper */
-.login-wrapper .phone-input-wrapper {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: var(--white);
-  transition: border-color 0.2s ease;
-}
-
-.login-wrapper .phone-input-wrapper:focus-within {
-  border-color: #003F87;
-}
-
-.login-wrapper .phone-input-wrapper select {
-  border: none;
-  background: transparent;
-  padding: 0.625rem 0.25rem 0.625rem 0.5rem;
-  color: var(--text-dark);
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
-  border-right: 1px solid var(--border-color);
-  border-radius: 0;
-  width: auto;
-}
-
-.login-wrapper .phone-input-wrapper input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 0.625rem 1rem 0.625rem 0.75rem;
-  color: var(--text-dark);
-  font-size: 0.875rem;
-  outline: none;
-  border-radius: 0;
-  width: 100%;
-}
-
-.login-wrapper .input-wrapper input::placeholder {
-  color: var(--text-lighter);
-}
-
-.login-wrapper .show-pwd-btn {
-  position: absolute;
-  right: 0.875rem;
-  background: none;
-  border: none;
-  color: var(--text-lighter);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-.login-wrapper .show-pwd-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.login-wrapper .show-pwd-btn:hover {
-  color: var(--text-light);
-}
-
-.login-wrapper .checkbox-group {
-  display: flex;
-  align-items: center;
-}
-
-.login-wrapper .checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-
-.login-wrapper .checkbox-label input {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s;
-}
-
-.login-wrapper .checkbox-label input:checked {
-  background-color: #003F87;
-  border-color: #003F87;
-}
-
-.login-wrapper .checkbox-label input:checked::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.login-wrapper .submit-btn {
-  background-color: #003F87;
-  color: var(--white);
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background-color 0.2s ease;
-  margin-top: 0.25rem;
-}
-
-.login-wrapper .submit-btn svg {
-  width: 14px;
-  height: 14px;
-}
-
-.login-wrapper .submit-btn:hover {
-  background-color: var(--secondary);
-}
-
-.login-wrapper .footer {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #E9ECEF;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  color: var(--text-lighter);
-}
-
-.login-wrapper .footer-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.login-wrapper .footer-links a {
-  color: var(--text-lighter);
-  text-decoration: none;
-}
-
-.login-wrapper .footer-links a:hover {
-  color: var(--text-light);
-}
-
-/* Responsiveness */
-@media (max-width: 900px) {
-  .login-layout {
-    flex-direction: column;
-    height: auto;
-    overflow: auto;
+@keyframes login-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
-  
-  .login-left-panel {
-    padding: 2rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .login-right-panel {
-    padding: 3rem 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page .otp-fade-in {
+    animation: none;
   }
+}
+
+/* Visible focus ring for keyboard users on the role-toggle tabs and the
+   show/hide-password icon buttons (Tailwind focus utilities weren't
+   applied to these elements in the markup). */
+.login-page button:focus-visible {
+  outline: 2px solid #003f87;
+  outline-offset: 2px;
 }

@@ -23,7 +23,7 @@ export default function StudentLogin({ onLogin }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmitStudentLogin = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
