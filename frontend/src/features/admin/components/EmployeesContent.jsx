@@ -331,27 +331,74 @@ const EmployeesContent = ({ employees = [], setEmployees, searchQuery = '', setS
       </div>
 
       {/* Top Header / Actions Bar */}
-      <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100 flex flex-col xl:flex-row gap-4 items-center justify-between">
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-          {/* Department Filter */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">Department</span>
-            <CustomSelect
-              value={deptFilter}
-              onChange={setDeptFilter}
-              options={uniqueDepts.map(d => ({ value: d, label: d }))}
-              className="w-full sm:w-[200px]"
-              selectClassName="w-full bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer relative"
-            />
-          </div>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5">
+  <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-center">
+
+    {/* Filters */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
+
+      {/* Department Filter */}
+      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all duration-300 w-full min-w-0">
+
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+          Department
+        </span>
+
+        <div className="flex-1 min-w-0">
+          <CustomSelect
+            value={deptFilter}
+            onChange={setDeptFilter}
+            options={uniqueDepts.map((d) => ({
+              value: d,
+              label: d,
+            }))}
+            className="w-full"
+            selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none"
+          />
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto bg-[#003F87] text-white px-5 py-2.5 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[#002B5E] shadow-md shadow-blue-900/10 transition-all active:scale-95 shrink-0"
-        >
-          <Plus size={18} /> Add Employee
-        </button>
+
       </div>
+
+    </div>
+
+    {/* Add Employee Button */}
+    <div className="w-full xl:w-auto">
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="
+          w-full
+          sm:w-full
+          md:w-full
+          lg:w-auto
+          xl:w-auto
+          min-h-[48px]
+          px-6
+          py-3
+          rounded-xl
+          bg-[#003F87]
+          text-white
+          text-sm
+          font-semibold
+          flex
+          items-center
+          justify-center
+          gap-2
+          whitespace-nowrap
+          hover:bg-[#002B5E]
+          transition-all
+          duration-300
+          shadow-md
+          shadow-blue-900/10
+          active:scale-95
+        "
+      >
+        <Plus size={18} className="shrink-0" />
+        Add Employee
+      </button>
+    </div>
+
+  </div>
+</div>
 
       {/* Grid Container */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

@@ -328,7 +328,7 @@ const Sidebar = ({
               setShowLogoutModal(false);
               onLogout();
             }}
-            className="flex-1 h-12 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700"
+            className="flex-1 h-12 rounded-xl bg-red-800 text-white font-semibold hover:bg-red-900"
           >
             Logout
           </button>

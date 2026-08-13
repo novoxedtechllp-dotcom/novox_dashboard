@@ -124,66 +124,134 @@ function InsightsHeader({ isMobile, isTablet, performance, leads = [] }) {
   const courseColors = ['#003F87', '#1976D2', '#0288D1'];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Row 1: 3 stat cards */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-        <InsightCard title="New Lead Inflow" icon={<Users size={15} />}>
-          <div className="flex justify-around">
-            <StatBadge label="Daily" value={daily} />
-            <StatBadge label="Weekly" value={weekly} />
-            <StatBadge label="Monthly" value={monthly} />
-          </div>
-        </InsightCard>
+    <div className="flex flex-col gap-4 w-full">
 
-        <InsightCard title="Closed Leads" icon={<CheckSquare size={15} />}>
-          <div className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#003F87] shrink-0" />
-              <div className={`flex-1 h-2 rounded-full bg-[#EEF2F8] overflow-hidden`}>
-                <div style={{ width: `${enrolledPct}%`, height: '100%', background: '#003F87', borderRadius: 4 }} />
-              </div>
-              <span className="text-[18px] font-extrabold text-[#003F87] min-w-[28px]">{enrolled}</span>
-              <span className="text-xs text-slate-500">Admission</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#E53935', flexShrink: 0 }} />
-              <div className={`flex-1 h-2 rounded-full bg-[#EEF2F8] overflow-hidden`}>
-                <div style={{ width: `${lostPct}%`, height: '100%', background: '#E53935', borderRadius: 4 }} />
-              </div>
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#E53935', minWidth: 28 }}>{lost}</span>
-              <span style={{ fontSize: 13, color: '#555' }}>Not Connected</span>
-            </div>
-          </div>
-        </InsightCard>
+  {/* ===================== TOP CARDS ===================== */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
-        <InsightCard title="Top Course Interest" icon={<BookOpen size={15} />}>
-          {sortedCourses.length > 0 ? (
-            sortedCourses.map(([course, count], idx) => (
-              <BarRow key={course} label={course} value={count} max={maxCourseCount} color={courseColors[idx]} />
-            ))
-          ) : (
-            <div className="text-xs text-slate-400 italic text-center mt-4">No course data</div>
-          )}
-        </InsightCard>
+    {/* Lead Inflow */}
+    <InsightCard title="New Lead Inflow" icon={<Users size={15} />}>
+      <div className="flex justify-between items-center gap-2 sm:gap-4">
+        <StatBadge label="Daily" value={daily} />
+        <StatBadge label="Weekly" value={weekly} />
+        <StatBadge label="Monthly" value={monthly} />
       </div>
+    </InsightCard>
 
-      {/* Row 2: Performance by salesperson */}
-      <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #E8EEF7', padding: '14px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <TrendingUp size={15} color="#003F87" />
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#555F6B' }}>Performance by Salesperson</span>
+    {/* Closed Leads */}
+    <InsightCard title="Closed Leads" icon={<CheckSquare size={15} />}>
+      <div className="flex flex-col gap-4">
+
+        {/* Admission */}
+        <div className="flex items-center gap-2">
+
+          <span className="w-2.5 h-2.5 rounded-full bg-[#003F87] shrink-0" />
+
+          <div className="flex-1 h-2 bg-[#EEF2F8] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#003F87]"
+              style={{ width: `${enrolledPct}%` }}
+            />
+          </div>
+
+          <span className="text-base sm:text-lg font-extrabold text-[#003F87] min-w-[32px] text-right">
+            {enrolled}
+          </span>
+
+          <span className="text-xs sm:text-sm text-slate-500 whitespace-nowrap">
+            Admission
+          </span>
         </div>
-        <div className="flex gap-2.5 flex-wrap">
-          {performance && performance.length > 0 ? (
-            performance.map(p => (
-              <SalespersonChip key={p.name} initials={p.initials} name={p.name} count={p.count} />
-            ))
-          ) : (
-            <div className="text-xs text-slate-400 italic">No lead data available to show salesperson performance.</div>
-          )}
+
+        {/* Not Connected */}
+        <div className="flex items-center gap-2">
+
+          <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
+
+          <div className="flex-1 h-2 bg-[#EEF2F8] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-red-600"
+              style={{ width: `${lostPct}%` }}
+            />
+          </div>
+
+          <span className="text-base sm:text-lg font-extrabold text-red-600 min-w-[32px] text-right">
+            {lost}
+          </span>
+
+          <span className="text-xs sm:text-sm text-slate-500 whitespace-nowrap">
+            Not Connected
+          </span>
         </div>
+
       </div>
+    </InsightCard>
+
+    {/* Course Interest */}
+    <InsightCard title="Top Course Interest" icon={<BookOpen size={15} />}>
+
+      {sortedCourses.length > 0 ? (
+        <div className="space-y-3">
+          {sortedCourses.map(([course, count], idx) => (
+            <BarRow
+              key={course}
+              label={course}
+              value={count}
+              max={maxCourseCount}
+              color={courseColors[idx]}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-xs italic text-slate-400 py-5">
+          No course data
+        </div>
+      )}
+
+    </InsightCard>
+
+  </div>
+
+  {/* ===================== PERFORMANCE ===================== */}
+  <div className="w-full bg-white rounded-2xl border border-[#E8EEF7] p-4 sm:p-5 lg:p-6">
+
+    <div className="flex items-center gap-2 mb-4">
+
+      <TrendingUp
+        size={16}
+        className="text-[#003F87] shrink-0"
+      />
+
+      <h3 className="text-sm sm:text-base font-bold text-slate-600">
+        Performance by Salesperson
+      </h3>
+
     </div>
+
+    {performance && performance.length > 0 ? (
+
+      <div className="flex flex-wrap gap-3">
+        {performance.map((p) => (
+          <SalespersonChip
+            key={p.name}
+            initials={p.initials}
+            name={p.name}
+            count={p.count}
+          />
+        ))}
+      </div>
+
+    ) : (
+
+      <div className="text-center text-xs italic text-slate-400 py-6">
+        No lead data available to show salesperson performance.
+      </div>
+
+    )}
+
+  </div>
+
+</div>
   );
 }
 
@@ -692,86 +760,176 @@ const SalesCrmContent = () => {
         </div>
 
         {/* ── Filter bar ── */}
-        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100 flex flex-col xl:flex-row gap-4 items-center justify-between w-full relative z-[60]">
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-            {/* Course Select */}
-            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">Course</span>
-              <CustomSelect
-                value={selectedCourse}
-                onChange={setSelectedCourse}
-                options={[
-                  { value: '', label: 'All Courses' },
-                  ...uniqueCourses.map(c => ({ value: c, label: c }))
-                ]}
-                className="w-full sm:w-[200px]"
-                selectClassName="w-full bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer relative"
-              />
-            </div>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 mb-6">
+  <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-start xl:items-center">
 
-            {/* Date Filters (From and To) */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:border-[#003F87]/30 transition-colors">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2 shrink-0">From</span>
-                <div className="flex items-center gap-1">
-                  <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setDateRange([date, endDate])}
-                    selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
-                    isClearable={true}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Select Date"
-                    showMonthDropdown
-                    showYearDropdown
-                    scrollableYearDropdown
-                    dropdownMode="scroll"
-                    className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer w-[140px] pr-7"
-                  />
-                  <Calendar size={14} className="text-slate-400 shrink-0 pointer-events-none" />
-                </div>
-              </div>
+    {/* Filters */}
+    <div className="space-y-3">
 
-              <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:border-[#003F87]/30 transition-colors">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2 shrink-0">To</span>
-                <div className="flex items-center gap-1">
-                  <DatePicker
-                    selected={endDate}
-                    onChange={(date) => setDateRange([startDate, date])}
-                    selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    minDate={startDate}
-                    isClearable={true}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="Select Date"
-                    showMonthDropdown
-                    showYearDropdown
-                    scrollableYearDropdown
-                    dropdownMode="scroll"
-                    className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer w-[140px] pr-7"
-                  />
-                  <Calendar size={14} className="text-slate-400 shrink-0 pointer-events-none" />
-                </div>
-              </div>
-            </div>
+      {/* Course Filter */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+
+        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all duration-300 min-w-0">
+
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+            Course
+          </span>
+
+          <div className="flex-1 min-w-0">
+            <CustomSelect
+              value={selectedCourse}
+              onChange={setSelectedCourse}
+              options={[
+                { value: "", label: "All Courses" },
+                ...uniqueCourses.map((c) => ({
+                  value: c,
+                  label: c,
+                })),
+              ]}
+              className="w-full"
+              selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none"
+            />
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 mt-4 sm:mt-0">
-            <button 
-              onClick={fetchLeads}
-              className="bg-white border border-slate-200 hover:bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 transition-colors"
-              title="Refresh Data"
-            >
-              <RefreshCcw size={16} />
-            </button>
-            <button onClick={() => setIsAddOpen(true)} style={{ background: '#003F87', color: '#fff', border: 'none', borderRadius: 9, padding: '8px 16px', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <Plus size={15} /> Add Lead
-            </button>
-          </div>
         </div>
 
+        {/* From Date */}
+        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all duration-300 min-w-0">
+
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+            From
+          </span>
+
+          <div className="relative flex-1 min-w-0">
+
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setDateRange([date, endDate])}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              isClearable
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Select Date"
+              showMonthDropdown
+              showYearDropdown
+              scrollableYearDropdown
+              dropdownMode="scroll"
+              className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none pr-8"
+            />
+
+            <Calendar
+              size={18}
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+
+          </div>
+
+        </div>
+
+        {/* To Date */}
+        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all duration-300 min-w-0">
+
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+            To
+          </span>
+
+          <div className="relative flex-1 min-w-0">
+
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setDateRange([startDate, date])}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              isClearable
+              dateFormat="dd/MM/yyyy"
+              placeholderText="Select Date"
+              showMonthDropdown
+              showYearDropdown
+              scrollableYearDropdown
+              dropdownMode="scroll"
+              className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none pr-8"
+            />
+
+            <Calendar
+              size={18}
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    {/* Action Buttons */}
+    {/* Action Buttons */}
+<div className="flex w-full sm:w-auto items-center gap-3">
+
+  {/* Refresh Button */}
+  <button
+    onClick={fetchLeads}
+    title="Refresh Data"
+    className="
+      flex-1
+      sm:flex-none
+      sm:w-12
+      h-12
+      rounded-xl
+      border
+      border-slate-200
+      bg-white
+      hover:bg-slate-50
+      flex
+      items-center
+      justify-center
+      text-slate-500
+      transition-all
+      duration-300
+      active:scale-95
+      shadow-sm
+    "
+  >
+    <RefreshCcw size={18} />
+  </button>
+
+  {/* Add Lead Button */}
+  <button
+    onClick={() => setIsAddOpen(true)}
+    className="
+      flex-1
+      sm:flex-none
+      h-12
+      px-5
+      rounded-xl
+      bg-[#003F87]
+      text-white
+      text-sm
+      font-semibold
+      flex
+      items-center
+      justify-center
+      gap-2
+      hover:bg-[#002B5E]
+      transition-all
+      duration-300
+      shadow-md
+      active:scale-95
+      whitespace-nowrap
+    "
+  >
+    <Plus size={18} />
+    Add Lead
+  </button>
+
+</div>
+
+  </div>
+</div>
         {/* Insights */}
         <InsightsHeader isMobile={isMobile} isTablet={isTablet} performance={performance} leads={leads} />
 

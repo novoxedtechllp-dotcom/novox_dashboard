@@ -566,60 +566,126 @@ const GalleryContent = ({ searchQuery = '', setSearchQuery = () => { } }) => {
       </div>
 
       {/* 2. Filter Bar & Actions */}
-      <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between mb-6">
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-blue-300 transition-colors">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">CATEGORY</span>
-            <CustomSelect
-              options={[{ value: 'All Categories', label: 'All Categories' }, ...categories.map(cat => ({ value: cat.name, label: cat.name }))]}
-              value={selectedCategory}
-              onChange={(val) => { setSelectedCategory(val); setCurrentPage(1); }}
-              placeholder="Category"
-              className="w-full sm:w-[200px]"
-              selectClassName="w-full bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer relative"
-            />
-          </div>
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-blue-300 transition-colors">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">DATE</span>
-            <div className="relative flex items-center">
-              <DatePicker
-                ref={datePickerRef}
-                selected={selectedDate ? new Date(selectedDate) : null}
-                onChange={(date) => {
-                  if (date) {
-                    const yyyy = date.getFullYear();
-                    const mm = String(date.getMonth() + 1).padStart(2, '0');
-                    const dd = String(date.getDate()).padStart(2, '0');
-                    setSelectedDate(`${yyyy}-${mm}-${dd}`);
-                  } else {
-                    setSelectedDate('');
-                  }
-                  setCurrentPage(1);
-                }}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="dd/mm/yyyy"
-                showMonthDropdown
-                showYearDropdown
-                scrollableYearDropdown
-                dropdownMode="scroll"
-                className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer w-[140px] pr-8"
-              />
-              <Calendar
-                size={16}
-                className="text-slate-400 absolute right-0 cursor-pointer"
-                onClick={() => datePickerRef.current?.setFocus()}
-              />
-            </div>
-          </div>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 mb-6">
+  <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-start xl:items-center">
+
+    {/* Filters */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 w-full">
+
+      {/* Category Filter */}
+      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-blue-300 transition-all duration-300 w-full min-w-0">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+          CATEGORY
+        </span>
+
+        <div className="flex-1 min-w-0">
+          <CustomSelect
+            options={[
+              { value: "All Categories", label: "All Categories" },
+              ...categories.map((cat) => ({
+                value: cat.name,
+                label: cat.name,
+              })),
+            ]}
+            value={selectedCategory}
+            onChange={(val) => {
+              setSelectedCategory(val);
+              setCurrentPage(1);
+            }}
+            placeholder="Category"
+            className="w-full"
+            selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none"
+          />
         </div>
-        <button
-          onClick={() => setShowUploadModal(true)}
-          className="w-full sm:w-auto px-6 py-2.5 bg-[#003F87] text-white text-sm font-bold rounded-xl hover:bg-[#002B5E] shadow-sm hover:shadow active:scale-95 transition-all flex items-center justify-center"
-        >
-          <Plus size={18} className="mr-2" />
-          Upload Images
-        </button>
       </div>
+
+      {/* Date Filter */}
+      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-blue-300 transition-all duration-300 w-full min-w-0">
+
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+          DATE
+        </span>
+
+        <div className="relative flex-1 min-w-0">
+          <DatePicker
+            ref={datePickerRef}
+            selected={selectedDate ? new Date(selectedDate) : null}
+            onChange={(date) => {
+              if (date) {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, "0");
+                const dd = String(date.getDate()).padStart(2, "0");
+                setSelectedDate(`${yyyy}-${mm}-${dd}`);
+              } else {
+                setSelectedDate("");
+              }
+              setCurrentPage(1);
+            }}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="dd/mm/yyyy"
+            showMonthDropdown
+            showYearDropdown
+            scrollableYearDropdown
+            dropdownMode="scroll"
+            className="
+              w-full
+              bg-transparent
+              text-sm
+              font-semibold
+              text-slate-700
+              outline-none
+              pr-8
+              cursor-pointer
+            "
+          />
+
+          <Calendar
+            size={18}
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer"
+            onClick={() => datePickerRef.current?.setFocus()}
+          />
+        </div>
+      </div>
+
+    </div>
+
+    {/* Upload Button */}
+    <div className="w-full xl:w-auto">
+      <button
+        onClick={() => setShowUploadModal(true)}
+        className="
+          w-full
+          sm:w-full
+          md:w-full
+          lg:w-auto
+          xl:w-auto
+          min-h-[48px]
+          px-6
+          py-3
+          rounded-xl
+          bg-[#003F87]
+          text-white
+          text-sm
+          font-semibold
+          flex
+          items-center
+          justify-center
+          gap-2
+          whitespace-nowrap
+          hover:bg-[#002B5E]
+          transition-all
+          duration-300
+          shadow-md
+          active:scale-95
+        "
+      >
+        <Plus size={18} className="shrink-0" />
+        Upload Images
+      </button>
+    </div>
+
+  </div>
+</div>
 
       {/* 3. Website Selection Tabs */}
       <div className="flex items-center gap-4 mb-6">

@@ -312,69 +312,124 @@ const AttendanceContent = ({ employees = [], courses = [], searchQuery = '', set
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100 flex flex-col xl:flex-row gap-4 items-center justify-between w-full relative z-[60]">
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-          {/* Category/Course/Dept Select */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">
-              {activeTab === 'Employees' ? 'Department' : 'Course'}
-            </span>
-            <div>
-              <CustomSelect
-                value={courseFilter}
-                onChange={setCourseFilter}
-                options={activeTab === 'Employees' ? uniqueDepts.map(d => ({ value: d, label: d })) : uniqueCourses.map(course => ({ value: course, label: course }))}
-                className="w-full sm:w-[200px]"
-                selectClassName="w-full bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer relative"
-              />
-            </div>
-          </div>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 mb-6">
+  <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-start xl:items-center">
 
-          {/* Date Filter */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">Date</span>
-            <div className="relative flex items-center">
-              <DatePicker
-                ref={datePickerRef}
-                selected={dateFilter ? new Date(dateFilter) : null}
-                onChange={(date) => {
-                  if (date) {
-                    const yyyy = date.getFullYear();
-                    const mm = String(date.getMonth() + 1).padStart(2, '0');
-                    const dd = String(date.getDate()).padStart(2, '0');
-                    setDateFilter(`${yyyy}-${mm}-${dd}`);
-                  } else {
-                    setDateFilter('');
-                  }
-                }}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="dd/mm/yyyy"
-                showMonthDropdown
-                showYearDropdown
-                scrollableYearDropdown
-                dropdownMode="scroll"
-                className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer w-[140px] pr-8"
-              />
-              <Calendar 
-                size={16} 
-                className="text-slate-400 absolute right-0 cursor-pointer" 
-                onClick={() => datePickerRef.current?.setFocus()} 
-              />
-            </div>
-          </div>
+    {/* Filters */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+
+      {/* Department / Course */}
+      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all duration-300 w-full min-w-0">
+
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+          {activeTab === "Employees" ? "Department" : "Course"}
+        </span>
+
+        <div className="flex-1 min-w-0">
+          <CustomSelect
+            value={courseFilter}
+            onChange={setCourseFilter}
+            options={
+              activeTab === "Employees"
+                ? uniqueDepts.map((d) => ({
+                    value: d,
+                    label: d,
+                  }))
+                : uniqueCourses.map((course) => ({
+                    value: course,
+                    label: course,
+                  }))
+            }
+            className="w-full"
+            selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none"
+          />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <button 
-            onClick={handleRefresh}
-            className="bg-white border border-slate-200 hover:bg-slate-50 w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 transition-colors"
-            title="Refresh Filters"
-          >
-            <RefreshCcw size={16} />
-          </button>
-        </div>
       </div>
 
+      {/* Date Filter */}
+      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all duration-300 w-full min-w-0">
+
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+          Date
+        </span>
+
+        <div className="relative flex-1 min-w-0">
+
+          <DatePicker
+            ref={datePickerRef}
+            selected={dateFilter ? new Date(dateFilter) : null}
+            onChange={(date) => {
+              if (date) {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, "0");
+                const dd = String(date.getDate()).padStart(2, "0");
+
+                setDateFilter(`${yyyy}-${mm}-${dd}`);
+              } else {
+                setDateFilter("");
+              }
+            }}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="dd/mm/yyyy"
+            showMonthDropdown
+            showYearDropdown
+            scrollableYearDropdown
+            dropdownMode="scroll"
+            className="
+              w-full
+              bg-transparent
+              text-sm
+              font-semibold
+              text-slate-700
+              outline-none
+              pr-8
+              cursor-pointer
+            "
+          />
+
+          <Calendar
+            size={18}
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer"
+            onClick={() => datePickerRef.current?.setFocus()}
+          />
+
+        </div>
+
+      </div>
+
+    </div>
+
+    {/* Refresh Button */}
+    <div className="flex justify-end xl:justify-center w-full xl:w-auto">
+      <button
+        onClick={handleRefresh}
+        title="Refresh Filters"
+        className="
+          w-full
+          sm:w-12
+          h-12
+          rounded-xl
+          border
+          border-slate-200
+          bg-slate-50
+          hover:bg-slate-100
+          flex
+          items-center
+          justify-center
+          text-slate-500
+          transition-all
+          duration-300
+          active:scale-95
+          shadow-sm
+        "
+      >
+        <RefreshCcw size={18} />
+      </button>
+    </div>
+
+  </div>
+</div>
       {/* Table Section */}
       <div className="bg-white border border-[#C2C6D4] rounded-[8px] shadow-sm overflow-hidden">
         <div 

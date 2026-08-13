@@ -549,70 +549,151 @@ const StudentsContent = ({ searchQuery = '', setSearchQuery = () => {}, courses 
       </div>
 
       {/* Top Header / Actions Bar */}
-      <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100 flex flex-col xl:flex-row gap-4 items-center justify-between">
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-          {/* Status Filter */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">Status</span>
-            <CustomSelect 
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={uniqueStatuses.map(s => ({ value: s, label: s }))}
-              className="w-full sm:w-[200px]"
-              selectClassName="w-full bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer relative"
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5">
+  <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4 items-start xl:items-center">
+
+    {/* Filters */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+      {/* Status Filter */}
+      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all w-full min-w-0">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+          Status
+        </span>
+
+        <div className="flex-1 min-w-0">
+          <CustomSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={uniqueStatuses.map((s) => ({
+              value: s,
+              label: s,
+            }))}
+            className="w-full"
+            selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Department Filter */}
+      {isAdmin && (
+        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all w-full min-w-0">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+            Department
+          </span>
+
+          <div className="flex-1 min-w-0">
+            <CustomSelect
+              value={departmentFilter}
+              onChange={setDepartmentFilter}
+              options={[
+                {
+                  value: "All Departments",
+                  label: "All Departments",
+                },
+                {
+                  value: "DEVELOPMENT",
+                  label: "Development",
+                },
+                {
+                  value: "MARKETING",
+                  label: "Marketing",
+                },
+                {
+                  value: "DESIGN",
+                  label: "Design",
+                },
+              ]}
+              className="w-full"
+              selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700"
             />
           </div>
-
-          {/* Department Filter */}
-          {isAdmin && (
-            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">Department</span>
-              <CustomSelect 
-                value={departmentFilter}
-                onChange={setDepartmentFilter}
-                options={[
-                  { value: 'All Departments', label: 'All Departments' },
-                  { value: 'DEVELOPMENT', label: 'Development' },
-                  { value: 'MARKETING', label: 'Marketing' },
-                  { value: 'DESIGN', label: 'Design' }
-                ]}
-                className="w-44"
-                selectClassName="text-sm font-bold text-slate-700 bg-transparent py-1"
-              />
-            </div>
-          )}
-
-          {/* Ownership Filter */}
-          {!isAdmin && (
-            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 hover:border-[#003F87]/30 transition-colors w-full sm:w-auto">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-3 shrink-0">Ownership</span>
-              <CustomSelect 
-                value={ownershipFilter}
-                onChange={setOwnershipFilter}
-                options={[
-                  { value: 'All Students', label: 'All Students' },
-                  { value: 'My Students', label: 'My Students' }
-                ]}
-                className="w-40"
-                selectClassName="text-sm font-bold text-slate-700 bg-transparent py-1"
-              />
-            </div>
-          )}
         </div>
+      )}
 
-        <button 
-          onClick={() => {
-            setNewStudent({
-              first_name: '', last_name: '', email: '', password: '', phone: '', parent_phone: '', guardian_name: '', address: '', joining_date: new Date().toISOString().split('T')[0], course_ids: [], avatarUrl: null
-            });
-            setNewStudentDocuments([]);
-            setIsAddModalOpen(true);
-          }}
-          className="w-full sm:w-auto bg-[#003F87] text-white px-5 py-2.5 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[#002B5E] shadow-md shadow-blue-900/10 transition-all active:scale-95 shrink-0"
-        >
-          <Plus size={18} /> Add New Student
-        </button>
-      </div>
+      {/* Ownership Filter */}
+      {!isAdmin && (
+        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:border-[#003F87]/30 transition-all w-full min-w-0">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-3 shrink-0">
+            Ownership
+          </span>
+
+          <div className="flex-1 min-w-0">
+            <CustomSelect
+              value={ownershipFilter}
+              onChange={setOwnershipFilter}
+              options={[
+                {
+                  value: "All Students",
+                  label: "All Students",
+                },
+                {
+                  value: "My Students",
+                  label: "My Students",
+                },
+              ]}
+              className="w-full"
+              selectClassName="w-full bg-transparent text-sm font-semibold text-slate-700"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* Add Student Button */}
+    <div className="w-full xl:w-auto">
+      <button
+        onClick={() => {
+          setNewStudent({
+            first_name: "",
+            last_name: "",
+            email: "",
+            password: "",
+            phone: "",
+            parent_phone: "",
+            guardian_name: "",
+            address: "",
+            joining_date: new Date().toISOString().split("T")[0],
+            course_ids: [],
+            avatarUrl: null,
+          });
+
+          setNewStudentDocuments([]);
+          setIsAddModalOpen(true);
+        }}
+        className="
+          w-full
+          sm:w-full
+          md:w-full
+          lg:w-auto
+          xl:w-auto
+          min-h-[48px]
+          px-6
+          py-3
+          rounded-xl
+          bg-[#003F87]
+          text-white
+          font-semibold
+          text-sm
+          flex
+          items-center
+          justify-center
+          gap-2
+          hover:bg-[#002B5E]
+          transition-all
+          duration-300
+          shadow-md
+          active:scale-95
+          whitespace-nowrap
+        "
+      >
+        <Plus size={18} />
+        Add New Student
+      </button>
+    </div>
+
+  </div>
+</div>
 
       {/* Grid Container */}
       {loading ? (
