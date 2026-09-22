@@ -32,7 +32,7 @@ const navItems = [
   { id: "my-students", label: "My Students", icon: GraduationCap },
   // { id: "students", label: "Students", icon: Users },
   { id: "employees", label: "Employees", icon: Briefcase },
-  { id: "courses", label: "Courses", icon: BookOpen },
+  // { id: "courses", label: "Courses", icon: BookOpen },
   // { id: "gallery", label: "Gallery", icon: Image },
   { id: "attendance", label: "Attendance", icon: Calendar },
   { id: "leave", label: "Leave Management", icon: FileText },
