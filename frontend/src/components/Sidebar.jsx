@@ -28,12 +28,12 @@ import {
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "daily-plan", label: "Mentoring Sessions", icon: BookOpen },
+  // { id: "daily-plan", label: "Mentoring Sessions", icon: BookOpen },
   { id: "my-students", label: "My Students", icon: GraduationCap },
-  { id: "students", label: "Students", icon: Users },
+  // { id: "students", label: "Students", icon: Users },
   { id: "employees", label: "Employees", icon: Briefcase },
   { id: "courses", label: "Courses", icon: BookOpen },
-  { id: "gallery", label: "Gallery", icon: Image },
+  // { id: "gallery", label: "Gallery", icon: Image },
   { id: "attendance", label: "Attendance", icon: Calendar },
   { id: "leave", label: "Leave Management", icon: FileText },
   { id: "fees", label: "Fees", icon: CreditCard },
@@ -167,11 +167,10 @@ const Sidebar = ({
         className={`
         fixed lg:static top-0 left-0 h-screen bg-white border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)]
         flex flex-col z-50 transition-all duration-300 ease-in-out overflow-hidden
-        ${
-          isOpen
+        ${isOpen
             ? "w-[260px] min-w-[260px] translate-x-0 pl-[20px] py-[28px]"
             : "w-[260px] min-w-[260px] lg:w-0 lg:min-w-0 lg:p-0 -translate-x-full lg:translate-x-0 lg:border-r-0"
-        }
+          }
       `}
       >
         {/* Container to prevent text wrapping when width shrinks */}
@@ -220,10 +219,9 @@ const Sidebar = ({
                     if (window.innerWidth < 1024 && setIsOpen) setIsOpen(false);
                   }}
                   className={`group flex items-center gap-[14px] px-[14px] py-[10px] rounded-xl transition-all duration-300 text-left w-full shrink-0 relative overflow-hidden
-                    ${
-                      isActive
-                        ? "bg-blue-50 text-[#003F87] font-bold"
-                        : "text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800"
+                    ${isActive
+                      ? "bg-blue-50 text-[#003F87] font-bold"
+                      : "text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800"
                     }`}
                 >
                   {isActive && (
@@ -252,10 +250,9 @@ const Sidebar = ({
                   window.innerWidth < 1024 && setIsOpen && setIsOpen(false)
                 }
                 className={`group flex items-center gap-[14px] px-[14px] py-[10px] rounded-xl transition-all duration-300 text-left w-full shrink-0 relative overflow-hidden
-                  ${
-                    activeTab === "settings"
-                      ? "bg-blue-50/80 text-[#003F87] font-bold shadow-sm border border-blue-100/50"
-                      : "text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800"
+                  ${activeTab === "settings"
+                    ? "bg-blue-50/80 text-[#003F87] font-bold shadow-sm border border-blue-100/50"
+                    : "text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800"
                   }`}
               >
                 {activeTab === "settings" && (
@@ -289,53 +286,53 @@ const Sidebar = ({
         </div>
       </aside>
       {showLogoutModal && (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={() => setShowLogoutModal(false)}
-      />
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowLogoutModal(false)}
+          />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-3xl shadow-2xl w-[92%] max-w-md p-8 animate-scaleIn">
+          {/* Modal */}
+          <div className="relative bg-white rounded-3xl shadow-2xl w-[92%] max-w-md p-8 animate-scaleIn">
 
-        <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
-            <LogOut className="w-10 h-10 text-red-600" />
+            <div className="flex justify-center">
+              <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
+                <LogOut className="w-10 h-10 text-red-600" />
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold text-center mt-5">
+              Confirm Logout
+            </h2>
+
+            <p className="text-center text-slate-500 mt-3">
+              Are you sure you want to logout?
+              <br />
+              You will need to login again.
+            </p>
+
+            <div className="flex gap-4 mt-8">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 h-12 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  onLogout();
+                }}
+                className="flex-1 h-12 rounded-xl bg-red-800 text-white font-semibold hover:bg-red-900"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
-
-        <h2 className="text-2xl font-bold text-center mt-5">
-          Confirm Logout
-        </h2>
-
-        <p className="text-center text-slate-500 mt-3">
-          Are you sure you want to logout?
-          <br />
-          You will need to login again.
-        </p>
-
-        <div className="flex gap-4 mt-8">
-          <button
-            onClick={() => setShowLogoutModal(false)}
-            className="flex-1 h-12 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100"
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={() => {
-              setShowLogoutModal(false);
-              onLogout();
-            }}
-            className="flex-1 h-12 rounded-xl bg-red-800 text-white font-semibold hover:bg-red-900"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  )}
+      )}
     </>
   );
 };
