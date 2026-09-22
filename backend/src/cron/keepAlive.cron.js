@@ -1,6 +1,6 @@
 import cron from "node-cron";
 
-const RENDER_URL = "https://novox-dashboard.onrender.com";
+const RENDER_URL = "https://novox-dashboard-w7d5.onrender.com";
 
 export const startKeepAliveCron = () => {
   // Ping self every 4 minutes to prevent Render from idling
