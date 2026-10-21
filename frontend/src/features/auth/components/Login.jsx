@@ -605,7 +605,7 @@
 
 
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Mail,
@@ -708,46 +708,6 @@ const ROLE_DASHBOARD_PATH = {
   STUDENT: "/student/dashboard",
 };
 
-// Lets the three panels keep working end-to-end (UI included) even when
-// the backend isn't running locally. Remove this block once a real API
-// is always available, or gate it behind an env flag like
-// import.meta.env.DEV.
-const MOCK_USERS = {
-  Admin: {
-    email: "admin@novox.com",
-    password: "admin@novox",
-    profile: {
-      id: "mock-admin-id",
-      email: "admin@novox.com",
-      role: "ADMIN",
-      first_name: "System",
-      last_name: "Admin",
-    },
-  },
-  Employee: {
-    email: "employee@novox.com",
-    password: "employee@novox",
-    profile: {
-      id: "mock-employee-id",
-      email: "employee@novox.com",
-      role: "EMPLOYEE",
-      first_name: "Staff",
-      last_name: "Member",
-    },
-  },
-  Student: {
-    email: "student@novox.com",
-    password: "student@novox",
-    profile: {
-      id: "mock-student-id",
-      email: "student@novox.com",
-      role: "STUDENT",
-      first_name: "Jane",
-      last_name: "Doe",
-    },
-  },
-};
-
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const [role, setRole] = useState("Admin");
@@ -837,15 +797,6 @@ export default function Login({ onLogin }) {
       }
     } catch (err) {
       console.error("Backend connection failed:", err);
-
-      // Developer fallback for testing frontend components offline when
-      // the backend isn't running.
-      const mock = MOCK_USERS[role];
-      if (mock && email === mock.email && password === mock.password) {
-        completeLogin({ ...mock.profile, token: "mock-jwt-token" });
-        return;
-      }
-
       setError(
         err.message ||
           "Failed to connect to the server. Please ensure the backend is running.",
