@@ -1,28 +1,4 @@
--- Drop existing tables to ensure a clean slate
-DROP TABLE IF EXISTS 
-  gallery_images, gallery_categories, audit_logs, notifications, blog_statistics, blogs, candidate_evaluations, interviews, candidates, 
-  whatsapp_messages, whatsapp_conversations, whatsapp_campaigns, whatsapp_templates, 
-  followups, lead_activities, leads, lead_sources, 
-  fee_payments, student_fee_plans, 
-  salary_slips, payroll, 
-  work_reports, project_members, projects, 
-  automated_alerts_log, employee_attendance, student_attendance, 
-  student_tasks, student_courses, student_documents, students, 
-  course_module_reviews, course_task_subtasks, course_tasks, course_submodules, course_schedules, course_instructors, course_modules, courses, 
-  employee_documents, employee_profiles, employee_roles, 
-  user_sessions, users 
-CASCADE;
-
--- Drop existing types
-DROP TYPE IF EXISTS 
-  USER_ROLE, USER_STATUS, EMPLOYEE_STATUS, COURSE_TRACK, COURSE_STATUS, 
-  STUDENT_STATUS, STUDENT_COURSE_STATUS, ATTENDANCE_STATUS, REPORT_TYPE, 
-  PAYROLL_STATUS, PAYMENT_METHOD, CRM_STAGE, ACTIVITY_TYPE, 
-  CAMPAIGN_STATUS, SENDER_TYPE, CANDIDATE_STATUS, INTERVIEW_RESULT, AUDIT_ACTION, 
-  PROJECT_STATUS, CONVERSATION_STATUS, PLATFORM_TYPE, TASK_STATUS, TASK_TYPE
-CASCADE;
-
--- Recreate Types
+-- Initial schema for a new database. This script does not drop existing objects.
 CREATE TYPE USER_ROLE AS ENUM ('ADMIN', 'EMPLOYEE', 'STUDENT');
 CREATE TYPE USER_STATUS AS ENUM ('ACTIVE', 'INACTIVE');
 CREATE TYPE EMPLOYEE_STATUS AS ENUM ('ACTIVE', 'ON_LEAVE', 'TERMINATED');
@@ -46,6 +22,7 @@ CREATE TYPE AUDIT_ACTION AS ENUM ('CREATE', 'UPDATE', 'DELETE', 'LOGIN');
 CREATE TYPE PROJECT_STATUS AS ENUM ('ACTIVE', 'COMPLETED');
 CREATE TYPE CONVERSATION_STATUS AS ENUM ('OPEN', 'CLOSED');
 CREATE TYPE PLATFORM_TYPE AS ENUM ('INDEED', 'NAUKRI', 'OTHER');
+CREATE TYPE APPROVAL_STATUS AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- 1. USERS & ACCESS CONTROL MODULE
 CREATE TABLE users (
@@ -101,6 +78,7 @@ CREATE TABLE courses (
     track COURSE_TRACK NOT NULL,
     duration_months INTEGER NOT NULL,
     capacity INTEGER NOT NULL,
+    total_fee NUMERIC(12,2) DEFAULT 0,
     status COURSE_STATUS DEFAULT 'DRAFT',
     thumbnail_url TEXT,
     created_at TIMESTAMP DEFAULT NOW()
@@ -144,15 +122,6 @@ CREATE TABLE course_task_subtasks (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS course_submodule_reviews (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  submodule_id UUID NOT NULL REFERENCES course_submodules(id) ON DELETE CASCADE,
-  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-  review_text TEXT NOT NULL,
-  suggestion_text TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
-);
-
 CREATE TABLE course_instructors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -186,6 +155,9 @@ CREATE TABLE leads (
     source_id UUID NOT NULL REFERENCES lead_sources(id),
     interested_course_id UUID REFERENCES courses(id) ON DELETE SET NULL,
     assigned_sales_id UUID REFERENCES employee_profiles(id),
+    owner VARCHAR(150),
+    is_hot BOOLEAN DEFAULT FALSE,
+    note TEXT,
     stage CRM_STAGE DEFAULT 'NEW',
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -215,11 +187,21 @@ CREATE TABLE students (
     last_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     parent_phone VARCHAR(20),
+    guardian_name VARCHAR(100),
     address TEXT,
     joining_date DATE NOT NULL,
     status STUDENT_STATUS DEFAULT 'ACTIVE',
     avatar_url TEXT,
     created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE course_submodule_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    submodule_id UUID NOT NULL REFERENCES course_submodules(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    review_text TEXT NOT NULL,
+    suggestion_text TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
 CREATE TABLE student_documents (
@@ -296,12 +278,15 @@ CREATE TABLE project_members (
 CREATE TABLE work_reports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     employee_id UUID NOT NULL REFERENCES employee_profiles(id) ON DELETE CASCADE,
-    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
     report_type REPORT_TYPE NOT NULL,
     work_done TEXT NOT NULL,
     blockers TEXT,
     submitted_at TIMESTAMP DEFAULT NOW(),
-    reviewed_by UUID REFERENCES employee_profiles(id)
+    reviewed_by UUID REFERENCES employee_profiles(id),
+    project_area VARCHAR(255) DEFAULT 'General Task',
+    attachment_url TEXT,
+    attachment_name VARCHAR(255)
 );
 
 -- 6. PAYROLL MODULE

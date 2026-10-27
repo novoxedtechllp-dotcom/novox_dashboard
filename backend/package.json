@@ -6,7 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "db:setup": "node src/db/setup.js",
+    "db:create-admin": "node create_admin.js",
+    "db:migrate:fees": "node run-fee-migration.js",
+    "db:migrate:leads": "node run-lead-migration.js",
+    "db:migrate:students": "node run-student-migration.js",
+    "db:migrate:work-reports": "node run-work-report-migration.js"
   },
   "keywords": [],
   "author": "",
