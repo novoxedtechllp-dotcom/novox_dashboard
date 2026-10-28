@@ -365,7 +365,12 @@ const getStudentBalances = asyncHandler(async (req, res) => {
 
   // 2. Get all fee plans
   const studentIds = [...new Set(enrollments.map(e => e.student_id))];
-  const { data: feePlans } = await supabase.from("student_fee_plans").select("*").in("student_id", studentIds);
+  const { data: feePlans, error: feePlanError } = await supabase
+    .from("student_fee_plans")
+    .select("*")
+    .in("student_id", studentIds);
+
+  if (feePlanError) throw new ApiError(500, feePlanError.message || "Failed to fetch fee plans");
 
   // 3. Get all payments
   const { data: allPayments, error: payError } = await supabase

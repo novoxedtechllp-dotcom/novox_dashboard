@@ -19,6 +19,7 @@ const setupDatabase = async () => {
 
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
   });
 
   try {
@@ -30,13 +31,17 @@ const setupDatabase = async () => {
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
 
     console.log('Executing database schema. This might take a moment...');
-    
-    // Execute the full script
+
+    await client.query('BEGIN');
     await client.query(schemaSql);
-    
+    await client.query('COMMIT');
     console.log('✅ Database tables, types, and indexes created successfully!');
   } catch (error) {
     console.error('❌ Error executing the schema:', error);
+    await client.query('ROLLBACK').catch((rollbackError) => {
+      console.error('❌ Failed to roll back schema transaction:', rollbackError);
+    });
+    process.exitCode = 1;
   } finally {
     await client.end();
     console.log('Connection closed.');

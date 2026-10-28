@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
-  GraduationCap, 
   Calendar, 
   CheckCircle, 
-  MessageSquare, 
   User, 
   Lock, 
   Eye, 
   EyeOff, 
   ArrowRight,
-  ShieldCheck,
   Loader2
 } from 'lucide-react';
 import { login } from '../api/authApi';
@@ -53,23 +50,6 @@ export default function StudentLogin({ onLogin }) {
       }
     } catch (err) {
       console.error(err);
-      
-      // Developer fallback for testing frontend components offline when backend is not running
-      if (email === 'student@novox.com' && password === 'student@novox') {
-        const mockStudentUser = {
-          id: 'mock-student-id',
-          email: 'student@novox.com',
-          role: 'STUDENT',
-          first_name: 'Alex',
-          last_name: 'Student',
-          token: 'mock-jwt-token'
-        };
-        sessionStorage.setItem('userInfo', JSON.stringify(mockStudentUser));
-        if (onLogin) onLogin('STUDENT');
-        navigate('/student/dashboard');
-        return;
-      }
-
       setError(err.response?.data?.message || err.message || "Failed to connect to the server. Please ensure the backend is running.");
       setLoading(false);
     }
@@ -143,7 +123,7 @@ export default function StudentLogin({ onLogin }) {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmitStudentLogin} className="space-y-6">
             
             {/* Email Field */}
             <div>

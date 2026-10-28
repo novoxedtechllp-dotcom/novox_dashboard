@@ -104,3 +104,40 @@ Why these exist: To keep the system running smoothly, alert users of events, and
 
 * **`notifications`**: In-app alerts sent to users (e.g., "Task Graded", "New Lead Assigned").
 * **`audit_logs`**: A security timeline that records exactly who created, updated, or deleted a record in the database. Essential for tracing unauthorized changes or accidental deletions.
+
+## Initial setup on a new Supabase project
+
+Set `DATABASE_URL`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`.
+From the `backend` directory, initialize the application schema once:
+
+```powershell
+npm run db:setup
+```
+
+The schema setup creates the application tables and does not drop existing tables.
+The student-fee migration has already been applied to the configured project. For
+another database that needs those fields, run `npm run db:migrate:fees`. This
+migration also adds `courses.total_fee`, which is used by the student-balance API.
+For another database missing the CRM lead fields, run
+`npm run db:migrate:leads`.
+For another database missing work-report fields, run
+`npm run db:migrate:work-reports`.
+
+Public registration intentionally creates student accounts only. To create the
+first administrator, open PowerShell in `backend` and run:
+
+```powershell
+$env:INITIAL_ADMIN_EMAIL = Read-Host "Admin email"
+$securePassword = Read-Host "Admin password (12+ characters)" -AsSecureString
+$env:INITIAL_ADMIN_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
+npm run db:create-admin
+Remove-Item Env:INITIAL_ADMIN_EMAIL, Env:INITIAL_ADMIN_PASSWORD
+```
+
+The script creates an active `ADMIN` user and its required employee profile as
+one transaction. It refuses to overwrite an existing account. Use the email and
+password entered above to sign in through the frontend.
+
+The schema setup creates empty application tables; it does not copy records from
+the old Supabase project. Existing application data must be exported from the old
+database and imported separately if it is still available.

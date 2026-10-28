@@ -1,6 +1,10 @@
 -- Fee Management System Migration
 -- This migration ALTERS existing tables — no drops or deletes.
 
+-- Courses provide the default fee for enrollments without a student-specific fee plan.
+ALTER TABLE courses
+  ADD COLUMN IF NOT EXISTS total_fee NUMERIC(12,2) DEFAULT 0;
+
 -- 1. Add new columns to student_fee_plans
 ALTER TABLE student_fee_plans
   ADD COLUMN IF NOT EXISTS course_id UUID REFERENCES courses(id) ON DELETE CASCADE,
@@ -37,3 +41,5 @@ CREATE INDEX IF NOT EXISTS idx_fee_plans_course ON student_fee_plans(course_id);
 CREATE INDEX IF NOT EXISTS idx_fee_payments_student ON fee_payments(student_id);
 CREATE INDEX IF NOT EXISTS idx_fee_payments_month_year ON fee_payments(month, year);
 CREATE INDEX IF NOT EXISTS idx_fee_payments_plan ON fee_payments(fee_plan_id);
+
+NOTIFY pgrst, 'reload schema';
