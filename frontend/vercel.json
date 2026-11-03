@@ -4,8 +4,12 @@
   "outputDirectory": "build",
   "rewrites": [
     {
+      "source": "/scraper-api/:path*",
+      "destination": "https://novox-job-scraper.onrender.com/:path*"
+    },
+    {
       "source": "/api/:path*",
-      "destination": "https://novox-dashboard-w7d5.onrender.com/api/:path*"
+      "destination": "https://novox-dashboard-9vir.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
